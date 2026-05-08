@@ -1,0 +1,210 @@
+---
+import Base from '../layouts/Base.astro';
+
+const branchen = [
+  {
+    slug: 'zahnarzt',
+    label: 'Zahnarzt',
+    icon: '🦷',
+    desc: 'Seriös, vertrauenswürdig, modern.',
+    tags: ['Terminbuchung', 'Team-Galerie', 'Leistungen'],
+    ready: true,
+    color: '#0096c7',
+  },
+  {
+    slug: 'kosmetik',
+    label: 'Kosmetik & Beauty',
+    icon: '✨',
+    desc: 'Elegant, feminin, luxuriös.',
+    tags: ['Portfolio', 'Preisliste', 'Buchung'],
+    ready: true,
+    color: '#c77dff',
+  },
+  {
+    slug: 'restaurant',
+    label: 'Restaurant',
+    icon: '🍽️',
+    desc: 'Appetitlich, warm, einladend.',
+    tags: ['Speisekarte', 'Reservierung', 'Galerie'],
+    ready: false,
+    color: '#f4845f',
+  },
+  {
+    slug: 'physiotherapie',
+    label: 'Physiotherapie',
+    icon: '💪',
+    desc: 'Klar, aktiv, professionell.',
+    tags: ['Leistungen', 'Team', 'Online-Termin'],
+    ready: false,
+    color: '#52b788',
+  },
+  {
+    slug: 'immobilien',
+    label: 'Immobilien',
+    icon: '🏠',
+    desc: 'Hochwertig, präzise, vertrauensvoll.',
+    tags: ['Objekte', 'Bewertung', 'Kontakt'],
+    ready: false,
+    color: '#e9c46a',
+  },
+  {
+    slug: 'handwerk',
+    label: 'Handwerk & Bau',
+    icon: '🔧',
+    desc: 'Kompetent, zuverlässig, lokal.',
+    tags: ['Leistungen', 'Referenzen', 'Angebot'],
+    ready: false,
+    color: '#ef476f',
+  },
+];
+
+const komponenten = [
+  { name: 'Hero Sektionen', count: 6, icon: '🎯' },
+  { name: 'Leistungskarten', count: 4, icon: '📦' },
+  { name: 'Team-Galerien', count: 3, icon: '👥' },
+  { name: 'Testimonials', count: 5, icon: '💬' },
+  { name: 'CTAs & Banner', count: 8, icon: '📢' },
+  { name: 'Kontaktformulare', count: 4, icon: '📧' },
+  { name: 'Preistabellen', count: 3, icon: '💶' },
+  { name: 'FAQ-Sektionen', count: 4, icon: '❓' },
+];
+---
+<Base title="Demo-Showcase — Blue Ocean Marketing">
+  <!-- NAV -->
+  <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(13,13,20,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;">
+    <a href="https://blue-ocean.marketing" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 0.625rem; text-decoration: none;">
+      <div style="width: 32px; height: 32px; background: #0096c7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">🌊</div>
+      <span style="font-weight: 600; color: #e2e8f0; font-size: 0.9rem;">Blue Ocean Marketing</span>
+    </a>
+    <a href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener" style="background: #0096c7; color: white; padding: 0.5rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+      Kontakt aufnehmen →
+    </a>
+  </nav>
+
+  <!-- HERO -->
+  <section style="padding: 8rem 2rem 5rem; text-align: center; max-width: 900px; margin: 0 auto;">
+    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,150,199,0.12); border: 1px solid rgba(0,150,199,0.3); border-radius: 100px; padding: 0.375rem 1rem; margin-bottom: 2rem; font-size: 0.8rem; color: #00b4d8; font-weight: 500;">
+      <span>●</span> Demo-Showcase — Musterwebsites &amp; Komponenten
+    </div>
+    <h1 style="font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.15; color: #f1f5f9; margin: 0 0 1.5rem;">
+      Ihre neue Website —<br />
+      <span style="color: #0096c7;">live zum Ansehen.</span>
+    </h1>
+    <p style="font-size: 1.1rem; color: #94a3b8; line-height: 1.7; max-width: 600px; margin: 0 auto 2.5rem;">
+      Fertige Muster für jede Branche. Echte Designs, echte Komponenten — individuell angepasst auf Ihre Marke, Ihr Logo, Ihre Farben.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="#branchen" style="background: #0096c7; color: white; padding: 0.875rem 2rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; text-decoration: none;">
+        Muster ansehen
+      </a>
+      <a href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener" style="background: rgba(255,255,255,0.06); color: #e2e8f0; padding: 0.875rem 2rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.1);">
+        Demo anfragen
+      </a>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <section style="background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 1.5rem 2rem;">
+    <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; text-align: center;">
+      {[
+        { val: '6+', label: 'Branchen-Templates' },
+        { val: '37+', label: 'Einzelkomponenten' },
+        { val: '100%', label: 'Mobil-optimiert' },
+        { val: '< 2s', label: 'Ladezeit (Ø)' },
+      ].map(s => (
+        <div>
+          <div style="font-size: 1.6rem; font-weight: 700; color: #0096c7;">{s.val}</div>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.2rem;">{s.label}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- BRANCHEN -->
+  <section id="branchen" style="padding: 5rem 2rem; max-width: 1100px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 style="font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; color: #f1f5f9; margin: 0 0 0.75rem;">Branchenspezifische Musterseiten</h2>
+      <p style="color: #64748b; font-size: 0.95rem;">Klicken Sie auf eine Branche, um die fertige Demo zu sehen.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem;">
+      {branchen.map(b => (
+        <div style={`background: #141420; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 1.75rem; position: relative; overflow: hidden;`}>
+          <div style={`position: absolute; top: 0; right: 0; width: 120px; height: 120px; background: radial-gradient(circle, ${b.color}15 0%, transparent 70%); pointer-events: none;`}></div>
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+            <div style={`width: 48px; height: 48px; background: ${b.color}18; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;`}>
+              {b.icon}
+            </div>
+            {b.ready
+              ? <span style={`background: ${b.color}18; color: ${b.color}; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.625rem; border-radius: 100px; border: 1px solid ${b.color}30;`}>LIVE</span>
+              : <span style="background: rgba(255,255,255,0.06); color: #64748b; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.625rem; border-radius: 100px;">BALD</span>
+            }
+          </div>
+          <h3 style="font-size: 1.1rem; font-weight: 600; color: #f1f5f9; margin: 0 0 0.4rem;">{b.label}</h3>
+          <p style="color: #64748b; font-size: 0.875rem; margin: 0 0 1.25rem;">{b.desc}</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.375rem; margin-bottom: 1.5rem;">
+            {b.tags.map(t => (
+              <span style="background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 6px;">{t}</span>
+            ))}
+          </div>
+          {b.ready
+            ? <a href={`/${b.slug}/`} style={`display: block; text-align: center; background: ${b.color}18; color: ${b.color}; border: 1px solid ${b.color}30; padding: 0.625rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none;`}>
+                Demo ansehen →
+              </a>
+            : <div style="display: block; text-align: center; background: rgba(255,255,255,0.04); color: #475569; border: 1px solid rgba(255,255,255,0.06); padding: 0.625rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">
+                In Arbeit...
+              </div>
+          }
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- KOMPONENTEN SHOWCASE -->
+  <section id="komponenten" style="padding: 5rem 2rem; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05);">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; color: #f1f5f9; margin: 0 0 0.75rem;">Komponenten-Bibliothek</h2>
+        <p style="color: #64748b; font-size: 0.95rem;">Alle Bausteine die wir für Ihre Website einsetzen — schnell montierbar, immer mobil-optimiert.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+        {komponenten.map(k => (
+          <div style="background: #141420; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+            <span style="font-size: 1.4rem;">{k.icon}</span>
+            <div>
+              <div style="font-size: 0.875rem; font-weight: 600; color: #e2e8f0;">{k.name}</div>
+              <div style="font-size: 0.75rem; color: #0096c7; margin-top: 0.1rem;">{k.count} Varianten</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style="text-align: center; margin-top: 2.5rem;">
+        <a href="/komponenten/" style="background: rgba(0,150,199,0.12); color: #00b4d8; border: 1px solid rgba(0,150,199,0.25); padding: 0.75rem 2rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none;">
+          Alle Komponenten ansehen →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section style="padding: 6rem 2rem; max-width: 700px; margin: 0 auto; text-align: center;">
+    <div style="background: linear-gradient(135deg, rgba(0,150,199,0.15) 0%, rgba(0,180,216,0.05) 100%); border: 1px solid rgba(0,150,199,0.25); border-radius: 24px; padding: 3.5rem 2rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 1.25rem;">🌊</div>
+      <h2 style="font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; color: #f1f5f9; margin: 0 0 1rem;">
+        Ihre individuelle Demo in 48h
+      </h2>
+      <p style="color: #94a3b8; font-size: 0.975rem; line-height: 1.7; margin: 0 0 2rem;">
+        Schreiben Sie uns — wir erstellen eine personalisierte Demo mit Ihrem Logo, Ihren Farben und Ihren Texten. Kostenlos und unverbindlich.
+      </p>
+      <a href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener" style="display: inline-block; background: #0096c7; color: white; padding: 0.875rem 2.5rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; text-decoration: none;">
+        Jetzt Demo anfragen
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="border-top: 1px solid rgba(255,255,255,0.07); padding: 1.5rem 2rem; text-align: center;">
+    <p style="color: #334155; font-size: 0.8rem; margin: 0;">
+      © 2025 Blue Ocean Marketing — <a href="https://blue-ocean.marketing/impressum/" style="color: #475569; text-decoration: none;">Impressum</a>
+    </p>
+  </footer>
+</Base>
