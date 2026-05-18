@@ -1,0 +1,492 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="Komponenten-Bibliothek — Blue Ocean Marketing">
+
+<!-- ═══════════════════════════════════════════════════════════
+     DEMO BANNER
+════════════════════════════════════════════════════════════════ -->
+<div style="background: #060610; color: #64748b; text-align: center; padding: 0.6rem 1rem; font-size: 0.75rem; border-bottom: 1px solid rgba(0,150,199,0.2); position: sticky; top: 0; z-index: 100;">
+  <a href="/" style="color: #0096c7; text-decoration: none; font-weight: 600;">← Demo-Übersicht</a>
+  &nbsp;·&nbsp; Komponenten-Bibliothek — Blue Ocean Marketing
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE HEADER
+════════════════════════════════════════════════════════════════ -->
+<section style="padding: 5rem 2rem 3.5rem; text-align: center; max-width: 760px; margin: 0 auto;">
+  <span style="display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #0096c7; background: rgba(0,150,199,0.1); border: 1px solid rgba(0,150,199,0.25); padding: 0.3rem 0.875rem; border-radius: 100px; margin-bottom: 1.5rem;">Bibliothek</span>
+  <h1 style="font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 700; color: #f1f5f9; line-height: 1.2; margin: 0 0 1rem;">Komponenten-Bibliothek</h1>
+  <p style="color: #64748b; font-size: 1rem; line-height: 1.7; margin: 0;">
+    Jeder Baustein einmal richtig gebaut — bereit für jeden Kunden. Farbe, Text und Bilder werden individuell angepasst, die Struktur bleibt.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION HEADING: HERO
+════════════════════════════════════════════════════════════════ -->
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem 1.5rem; display: flex; align-items: baseline; gap: 1.25rem;">
+  <h2 style="font-size: 1.1rem; font-weight: 700; color: #e2e8f0; margin: 0;">Hero Sektionen</h2>
+  <span style="font-size: 0.8rem; color: #334155;">4 Varianten</span>
+  <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.07);"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     [Hero] Glacier Split
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #52b788; background: rgba(82,183,136,0.1); border: 1px solid rgba(82,183,136,0.25); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Hero] Glacier Split</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 500px;">Geteilter Aufbau: Text links, Bild rechts. Klar, vertrauenswürdig — ideal wenn der erste Eindruck Seriosität signalisieren soll.</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Zahnarzt', 'Physiotherapie', 'Beratung', 'Versicherung', 'Allgemeinmedizin'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- [Hero] Glacier Split — PREVIEW -->
+  <div style="overflow: hidden;">
+    <section id="glacier-split-grid" style="display: grid; grid-template-columns: 1fr 1fr; min-height: 82vh; font-family: 'Inter', system-ui, sans-serif;">
+
+      <!-- LEFT: content -->
+      <div style="background: #ffffff; padding: clamp(2.5rem, 6vw, 5rem); display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden;">
+        <!-- Subtle top-left accent -->
+        <div style="position: absolute; top: -60px; left: -60px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,150,199,0.07) 0%, transparent 70%); pointer-events: none;"></div>
+
+        <span data-gs="badge" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; color: #0096c7; background: rgba(0,150,199,0.08); border: 1px solid rgba(0,150,199,0.2); padding: 0.3rem 0.875rem; border-radius: 100px; margin-bottom: 1.75rem; width: fit-content;">
+          <span style="width: 6px; height: 6px; background: #0096c7; border-radius: 50%; flex-shrink: 0;"></span>
+          Zahnarztpraxis Müller · Pforzheim
+        </span>
+
+        <h1 data-gs="title" style="font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 700; line-height: 1.15; color: #0f172a; margin: 0 0 1.25rem;">
+          Ihr Lächeln.<br>
+          <span style="color: #0096c7;">Unsere Leidenschaft.</span>
+        </h1>
+
+        <p data-gs="desc" style="font-size: clamp(0.9rem, 1.3vw, 1rem); color: #475569; line-height: 1.75; margin: 0 0 2rem; max-width: 400px;">
+          Moderne Zahnmedizin in entspannter Atmosphäre. Wir nehmen uns Zeit für Sie — vom ersten Gespräch bis zum strahlenden Ergebnis.
+        </p>
+
+        <div data-gs="ctas" style="display: flex; gap: 0.875rem; flex-wrap: wrap; margin-bottom: 2.5rem;">
+          <a href="#" style="background: #0096c7; color: white; padding: 0.875rem 1.75rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(0,150,199,0.3);">
+            Termin online buchen
+          </a>
+          <a href="#" style="background: transparent; color: #334155; padding: 0.875rem 1.75rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; border: 1.5px solid #e2e8f0;">
+            Leistungen ansehen
+          </a>
+        </div>
+
+        <!-- Trust row -->
+        <div data-gs="trust" style="display: flex; align-items: center; gap: 1.25rem; padding-top: 1.75rem; border-top: 1px solid #f1f5f9; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; gap: 1px;">
+              {'★★★★★'.split('').map(() => (
+                <span style="color: #f59e0b; font-size: 0.9rem;">★</span>
+              ))}
+            </div>
+            <span style="font-size: 0.8rem; color: #64748b; font-weight: 500;">4.9 Google</span>
+          </div>
+          <div style="width: 1px; height: 20px; background: #e2e8f0;"></div>
+          <span style="font-size: 0.8rem; color: #64748b;">500+ Patienten</span>
+          <div style="width: 1px; height: 20px; background: #e2e8f0;"></div>
+          <span style="font-size: 0.8rem; color: #64748b;">Seit 2008</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: image placeholder -->
+      <div id="glacier-split-right" style="position: relative; overflow: hidden; min-height: 380px;">
+        <!-- Atmospheric gradient background -->
+        <div style="position: absolute; inset: 0; background: linear-gradient(140deg, #b8dcea 0%, #6fb8d0 30%, #2e90b0 60%, #1a7090 100%);"></div>
+        <!-- Depth layers -->
+        <div style="position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 35% 40%, rgba(255,255,255,0.25) 0%, transparent 55%);"></div>
+        <!-- Subtle grid overlay -->
+        <div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 50px 50px;"></div>
+        <!-- Decorative circles -->
+        <div style="position: absolute; top: 15%; right: 12%; width: 180px; height: 180px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 50%;"></div>
+        <div style="position: absolute; top: 22%; right: 19%; width: 120px; height: 120px; border: 1px solid rgba(255,255,255,0.1); border-radius: 50%;"></div>
+        <!-- Floating badge -->
+        <div data-gs="image" style="position: absolute; bottom: 2.5rem; left: 2rem; background: rgba(255,255,255,0.95); border-radius: 14px; padding: 1rem 1.25rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); max-width: 200px;">
+          <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Nächster freier Termin</div>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">Mo, 12. Mai · 10:30</div>
+          <div style="margin-top: 0.625rem; background: #0096c7; color: white; text-align: center; padding: 0.4rem; border-radius: 7px; font-size: 0.78rem; font-weight: 600;">Jetzt buchen</div>
+        </div>
+        <!-- Decorative bottom-right -->
+        <div style="position: absolute; bottom: -30px; right: -30px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);"></div>
+      </div>
+    </section>
+
+    <!-- Mobile stacked version (shown only on small screens) -->
+    <style>
+      @media (max-width: 680px) {
+        .gs-grid { grid-template-columns: 1fr !important; }
+        .gs-right { min-height: 260px !important; }
+      }
+    </style>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     [Hero] Neon Fade
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #00b4d8; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.25); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Hero] Neon Fade</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 500px;">Cineastischer Vollbild-Hero. Atmosphärischer Hintergrund, große Headline mit Motion-Fade beim Laden. Für Premium-Brands die sofort Eindruck machen wollen.</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Kosmetikstudio', 'Immobilien', 'Restaurant', 'Premium-Hotel', 'Fotograf'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- [Hero] Neon Fade — PREVIEW -->
+  <section id="neon-fade" style="position: relative; min-height: 82vh; overflow: hidden; display: flex; align-items: flex-end; font-family: 'Inter', system-ui, sans-serif;">
+
+    <!-- Atmospheric background -->
+    <div style="position: absolute; inset: 0; background:
+      radial-gradient(ellipse 65% 75% at 68% 28%, rgba(0,110,170,0.32) 0%, transparent 58%),
+      radial-gradient(ellipse 45% 45% at 18% 72%, rgba(0,60,100,0.2) 0%, transparent 55%),
+      radial-gradient(ellipse 30% 30% at 85% 75%, rgba(0,80,130,0.15) 0%, transparent 50%),
+      linear-gradient(145deg, #04060e 0%, #070d1c 45%, #050810 100%);
+    "></div>
+
+    <!-- Subtle grid texture -->
+    <div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px); background-size: 65px 65px; pointer-events: none;"></div>
+
+    <!-- Animated ambient orb -->
+    <div id="nf-orb" style="position: absolute; width: 65vw; height: 65vw; max-width: 680px; max-height: 680px; background: radial-gradient(circle, rgba(0,150,199,0.14) 0%, transparent 68%); border-radius: 50%; top: -18%; right: -8%; pointer-events: none; animation: nfOrb 11s ease-in-out infinite alternate;"></div>
+
+    <!-- Gradient overlays for readability -->
+    <div style="position: absolute; inset: 0; background:
+      linear-gradient(to right, rgba(4,6,14,0.82) 0%, rgba(4,6,14,0.35) 55%, rgba(4,6,14,0.05) 100%),
+      linear-gradient(to top, rgba(4,6,14,0.95) 0%, rgba(4,6,14,0.45) 35%, rgba(4,6,14,0.05) 65%);
+      pointer-events: none;
+    "></div>
+
+    <!-- Content -->
+    <div style="position: relative; z-index: 2; padding: clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 6vw, 5rem); max-width: 700px; padding-bottom: clamp(3.5rem, 6vw, 5rem);">
+
+      <div data-nf="badge" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); padding: 0.3rem 0.875rem; border-radius: 100px; margin-bottom: 1.75rem; backdrop-filter: blur(8px); background: rgba(255,255,255,0.05);">
+        <span style="width: 6px; height: 6px; background: #00d4ff; border-radius: 50%; box-shadow: 0 0 8px #00d4ff; flex-shrink: 0;"></span>
+        Studio Lumière · Kosmetik &amp; Ästhetik
+      </div>
+
+      <h1 data-nf="title" style="font-size: clamp(2.8rem, 6.5vw, 5.5rem); font-weight: 700; line-height: 1.05; color: #ffffff; margin: 0 0 1.5rem; letter-spacing: -0.025em;">
+        Schönheit,<br>
+        <span style="background: linear-gradient(90deg, #00b4d8, #7dd3fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">die bleibt.</span>
+      </h1>
+
+      <p data-nf="desc" style="font-size: clamp(0.9rem, 1.4vw, 1.05rem); color: rgba(255,255,255,0.55); line-height: 1.78; margin: 0 0 2.25rem; max-width: 440px; font-weight: 300;">
+        Hochwertige Behandlungen in einem Raum, der selbst Entspannung verkörpert. Für Menschen, die das Beste für sich wählen.
+      </p>
+
+      <div data-nf="ctas" style="display: flex; gap: 0.875rem; flex-wrap: wrap; margin-bottom: 2.75rem;">
+        <a href="#" style="background: #0096c7; color: white; padding: 0.9rem 1.875rem; border-radius: 100px; font-size: 0.88rem; font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 20px rgba(0,150,199,0.4), 0 0 40px rgba(0,150,199,0.12);">
+          Termin buchen →
+        </a>
+        <a href="#" style="background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); padding: 0.9rem 1.875rem; border-radius: 100px; font-size: 0.88rem; font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(8px);">
+          Behandlungen
+        </a>
+      </div>
+
+      <!-- Trust row -->
+      <div data-nf="trust" style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div style="display: flex; gap: 1px;">
+            {'★★★★★'.split('').map(() => (
+              <span style="color: #f59e0b; font-size: 0.85rem;">★</span>
+            ))}
+          </div>
+          <span style="font-size: 0.78rem; color: rgba(255,255,255,0.4);">5.0 · 180 Bewertungen</span>
+        </div>
+        <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
+        <span style="font-size: 0.78rem; color: rgba(255,255,255,0.4);">1.200+ Kunden</span>
+        <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
+        <span style="font-size: 0.78rem; color: rgba(255,255,255,0.4);">Seit 2016</span>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div data-nf="scroll" style="position: absolute; bottom: 2rem; right: 2.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; opacity: 0.4; pointer-events: none;">
+      <div style="width: 1px; height: 40px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.6)); animation: scrollLine 2s ease-in-out infinite;"></div>
+      <span style="font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.6); writing-mode: vertical-rl;">Scroll</span>
+    </div>
+
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     [Hero] Editorial Stack
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #d4a041; background: rgba(212,160,65,0.1); border: 1px solid rgba(212,160,65,0.25); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Hero] Editorial Stack</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 500px;">Typografie als Design. Die Headline dominiert — kein Bild nötig. Mutig, modern und sofort erkennbar. Funktioniert auf Hell und Dunkel.</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Restaurant', 'Agentur', 'Fotografie', 'Architektur', 'Mode & Design'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- [Hero] Editorial Stack — PREVIEW -->
+  <section id="editorial" style="position: relative; min-height: 82vh; overflow: hidden; background: #0a0808; display: flex; align-items: center; font-family: 'Inter', system-ui, sans-serif;">
+
+    <!-- Warm accent orb background -->
+    <div style="position: absolute; top: -15%; right: -5%; width: 70vw; height: 70vw; max-width: 700px; max-height: 700px; background: radial-gradient(circle, rgba(212,140,40,0.12) 0%, transparent 65%); border-radius: 50%; pointer-events: none; animation: esOrb 14s ease-in-out infinite alternate;"></div>
+    <div style="position: absolute; bottom: -20%; left: -10%; width: 50vw; height: 50vw; max-width: 500px; max-height: 500px; background: radial-gradient(circle, rgba(180,60,40,0.08) 0%, transparent 65%); border-radius: 50%; pointer-events: none;"></div>
+
+    <!-- Subtle noise texture via pattern -->
+    <div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px); background-size: 80px 80px; pointer-events: none;"></div>
+
+    <div style="position: relative; z-index: 2; width: 100%; padding: clamp(2.5rem, 6vw, 5rem);">
+
+      <!-- Top label -->
+      <div data-es="badge" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem;">
+        <span style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #d4a041;">Trattoria Fuoco</span>
+        <div style="flex: 1; max-width: 80px; height: 1px; background: rgba(212,160,65,0.4);"></div>
+        <span style="font-size: 0.68rem; letter-spacing: 0.1em; color: rgba(255,255,255,0.25); text-transform: uppercase;">Stuttgart · Mitte</span>
+      </div>
+
+      <!-- BIG word -->
+      <div data-es="word" style="overflow: hidden;">
+        <h1 style="font-size: clamp(5rem, 14vw, 13rem); font-weight: 800; line-height: 0.88; color: #ffffff; margin: 0; letter-spacing: -0.04em; white-space: nowrap; overflow: hidden; text-overflow: clip;">
+          CUCINA<span style="color: #d4a041; display: inline-block; margin-left: 0.05em;">.</span>
+        </h1>
+        <h1 style="font-size: clamp(5rem, 14vw, 13rem); font-weight: 800; line-height: 0.88; color: rgba(255,255,255,0.08); margin: 0 0 0.15em; letter-spacing: -0.04em; white-space: nowrap; overflow: hidden; text-overflow: clip;">
+          FUOCO
+        </h1>
+      </div>
+
+      <!-- Divider line -->
+      <div data-es="line" style="width: 100%; max-width: 520px; height: 1px; background: linear-gradient(to right, rgba(212,160,65,0.6), rgba(212,160,65,0.1), transparent); margin: 2rem 0; transform-origin: left;"></div>
+
+      <!-- Sub + CTA row -->
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 2rem; max-width: 800px;">
+        <div data-es="sub">
+          <p style="font-size: clamp(0.9rem, 1.4vw, 1rem); color: rgba(255,255,255,0.4); line-height: 1.75; margin: 0; max-width: 380px; font-weight: 300;">
+            Authentische norditalienische Küche. Holzofen, Handgemachtes, Gastfreundschaft ohne Kompromiss — seit 1994 in Stuttgart.
+          </p>
+        </div>
+        <div data-es="cta" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <a href="#" style="color: #d4a041; font-size: 0.88rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.75rem; border: 1.5px solid rgba(212,160,65,0.4); border-radius: 100px; min-height: 44px;">
+            Tisch reservieren
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#" style="color: rgba(255,255,255,0.4); font-size: 0.88rem; text-decoration: none; font-weight: 500; min-height: 44px; display: inline-flex; align-items: center;">
+            Speisekarte →
+          </a>
+        </div>
+      </div>
+
+      <!-- Bottom right: opening times badge -->
+      <div style="position: absolute; bottom: 2.5rem; right: 2.5rem; text-align: right; display: none;" class="es-times">
+        <div style="font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); margin-bottom: 0.25rem;">Geöffnet</div>
+        <div style="font-size: 0.82rem; color: rgba(255,255,255,0.35);">Di–So · 17:30–23:00</div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     [Hero] Estate Cinematic
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #b08d57; background: rgba(176,141,87,0.1); border: 1px solid rgba(176,141,87,0.25); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Hero] Estate Cinematic</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 500px;">Vollbild-Foto-Hero: Projektname groß unten links, horizontale Thumbnail-Leiste zum Wechseln, Auto-Rotation + Wisch + Tastatur. Vorbild crownd.at — Foto im Mittelpunkt, Gold-Akzent.</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Immobilien', 'Galerie', 'Architektur', 'Hotel & Resort', 'Yacht & Charter'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- [Hero] Estate Cinematic — PREVIEW -->
+  <section id="estate-cinematic" style="position: relative; min-height: 82vh; overflow: hidden; background: linear-gradient(165deg,#0d0a04 0%,#3a2a10 38%,#5c4420 54%,#1a1206 100%); font-family: 'Inter', system-ui, sans-serif;">
+    <!-- readability overlay -->
+    <div style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.28) 52%, rgba(0,0,0,0.06) 100%), linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 32%, rgba(0,0,0,0.1) 62%);"></div>
+    <!-- ambient gold orb -->
+    <div style="position: absolute; inset: 0; background: radial-gradient(ellipse 55% 68% at 75% 22%, rgba(176,141,87,0.22) 0%, transparent 65%);"></div>
+
+    <!-- project content bottom-left -->
+    <div style="position: absolute; bottom: 200px; left: clamp(2rem,6vw,5rem); max-width: 580px; z-index: 2;">
+      <div style="display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.8rem;">
+        <span style="display: inline-block; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #15110d; background: #b08d57; padding: 0.34rem 0.95rem; border-radius: 100px;">Exklusiv</span>
+        <span style="display: flex; align-items: center; gap: 0.38rem; font-size: 0.83rem; color: rgba(255,255,255,0.62);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          München · Bogenhausen
+        </span>
+      </div>
+      <h1 style="font-family: 'Cormorant', Georgia, serif; font-size: clamp(2.8rem,10vw,9rem); font-weight: 600; font-style: italic; color: #fff; line-height: 0.85; letter-spacing: -0.03em; margin: 0 0 1.1rem;">Grace</h1>
+      <p style="font-size: clamp(0.85rem,1.4vw,0.96rem); color: rgba(255,255,255,0.6); line-height: 1.72; font-weight: 300; max-width: 400px; margin: 0 0 1.7rem;">Penthouse · 4 Zimmer · 182 m² · Dachterrasse mit Panoramablick.</p>
+      <a href="#" style="display: inline-flex; align-items: center; gap: 0.55rem; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; color: #15110d; background: #b08d57; padding: 0.9rem 1.9rem; border-radius: 100px; text-decoration: none;">Zum Objekt
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <!-- thumbnail strip -->
+    <div style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 3; display: flex; gap: 0.6rem; padding: 1rem clamp(1.5rem,4vw,3.5rem) 1.75rem; overflow-x: auto;">
+      {[
+        { n: 'Grace', g: 'linear-gradient(145deg,#1a1004,#5c4220)', a: true },
+        { n: 'Ruban', g: 'linear-gradient(145deg,#020d20,#162f52)', a: false },
+        { n: 'Finest', g: 'linear-gradient(145deg,#0a1806,#2e4820)', a: false },
+        { n: 'The View', g: 'linear-gradient(145deg,#0c1020,#2c3858)', a: false },
+        { n: 'Lumen', g: 'linear-gradient(145deg,#060e08,#203028)', a: false },
+      ].map((t) => (
+        <div style={`position: relative; flex: 0 0 clamp(120px,13vw,195px); aspect-ratio: 16/10; border-radius: 5px; overflow: hidden; border: 2px solid ${t.a ? 'rgba(255,255,255,0.88)' : 'transparent'}; transform: ${t.a ? 'translateY(-4px)' : 'none'}; box-shadow: ${t.a ? '0 14px 36px rgba(0,0,0,0.55)' : 'none'};`}>
+          <div style={`position: absolute; inset: 0; background: ${t.g};`}></div>
+          <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.74) 0%, rgba(0,0,0,0.1) 55%);"></div>
+          <span style="position: absolute; bottom: 0.52rem; left: 0.65rem; right: 0.4rem; font-family: 'Cormorant', Georgia, serif; font-size: 0.9rem; font-weight: 500; font-style: italic; color: #fff;">{t.n}</span>
+          {t.a && <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 2.5px; background: #b08d57;"></div>}
+        </div>
+      ))}
+    </div>
+
+    <!-- side dots -->
+    <div style="position: absolute; right: clamp(1.5rem,2.5vw,2.5rem); top: 50%; transform: translateY(-50%); z-index: 3; display: flex; flex-direction: column; gap: 0.55rem;">
+      {[true,false,false,false,false].map((a) => (
+        <div style={`width: 5px; height: 5px; border-radius: 50%; background: ${a ? '#fff' : 'rgba(255,255,255,0.25)'}; transform: ${a ? 'scale(1.5)' : 'none'};`}></div>
+      ))}
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION HEADING: VIDEO
+════════════════════════════════════════════════════════════════ -->
+<div style="max-width: 1200px; margin: 3rem auto 0; padding: 0 2rem 1.5rem; display: flex; align-items: baseline; gap: 1.25rem;">
+  <h2 style="font-size: 1.1rem; font-weight: 700; color: #e2e8f0; margin: 0;">Video-Sektionen</h2>
+  <span style="font-size: 0.8rem; color: #334155;">1 Variante</span>
+  <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.07);"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     [Video] Signature Reel
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #b08d57; background: rgba(176,141,87,0.1); border: 1px solid rgba(176,141,87,0.25); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Video] Signature Reel</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 500px;">Vollbild-Band mit nahtlos rotierenden Hintergrund-Videos (web-optimiert, stumm, autoplay, Reduced-Motion-sicher). Zweifarbiger Titel, Gold-CTA, Such-Pille. Vorbild: crownd.at „Signature".</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Immobilien', 'Hotel & Resort', 'Restaurant', 'Architektur', 'Premium-Brand'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- [Video] Signature Reel — PREVIEW (Poster-Standbild statt Live-Video) -->
+  <section style="position: relative; min-height: 70vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; background: #15110d; font-family: 'Inter', system-ui, sans-serif;">
+    <img src="/immobilien/sig-poster.webp" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;" />
+    <div style="position: absolute; inset: 0; z-index: 1; background: linear-gradient(rgba(20,18,16,0.5) 0%, rgba(20,18,16,0.62) 100%);"></div>
+    <div style="position: relative; z-index: 2; padding: 3rem clamp(1.25rem,5vw,3rem); max-width: 760px;">
+      <span style="display: block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #b08d57; margin-bottom: 1.5rem;">Signature Collection</span>
+      <h2 style="font-family: 'Cormorant', Georgia, serif; color: #fff; font-size: clamp(2.4rem,6vw,5rem); font-weight: 600; line-height: 1.05; letter-spacing: 0.04em; text-transform: uppercase; margin: 0;">Beyond Estates <em style="font-style: italic; text-transform: none; font-weight: 500; letter-spacing: 0; color: #c8a875;">Signature</em></h2>
+      <p style="color: rgba(255,255,255,0.8); font-size: clamp(0.95rem,1.6vw,1.15rem); line-height: 1.7; font-weight: 300; margin: 1.25rem auto 2rem; max-width: 32ch;">Außergewöhnliche Wohnungen mit einer Ausstattung, die ihresgleichen sucht.</p>
+      <a href="#" style="display: inline-flex; align-items: center; gap: 0.55rem; background: #b08d57; color: #15110d; padding: 0.95rem 2.2rem; border-radius: 100px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; min-height: 44px;">Apartments entdecken</a>
+      <div style="display: flex; align-items: center; gap: 0.65rem; width: min(420px,100%); margin: 2.25rem auto 0; background: #fff; border-radius: 100px; padding: 0.9rem 1.6rem; color: #7a7166; font-size: 0.92rem; min-height: 44px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b08d57" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        Wohnung finden
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════════════ -->
+<section style="padding: 3rem 2rem; border-top: 1px solid rgba(255,255,255,0.06); text-align: center;">
+  <a href="/" style="color: #0096c7; text-decoration: none; font-size: 0.875rem; font-weight: 500;">← Zurück zur Übersicht</a>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     ANIMATIONS
+════════════════════════════════════════════════════════════════ -->
+<style>
+  @keyframes nfOrb {
+    0%   { transform: scale(1) translate(0, 0); }
+    50%  { transform: scale(1.12) translate(-3%, 6%); }
+    100% { transform: scale(0.9) translate(4%, -4%); }
+  }
+  @keyframes esOrb {
+    0%   { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.15) translate(-5%, 8%); }
+  }
+  @keyframes scrollLine {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 0.8; transform: scaleY(1.15); }
+  }
+
+  /* Mobile: Glacier Split stacks */
+  @media (max-width: 700px) {
+    :global(#glacier-split-grid) {
+      grid-template-columns: 1fr !important;
+    }
+    :global(#glacier-split-right) {
+      min-height: 260px !important;
+      order: -1;
+    }
+    :global(#neon-fade) {
+      align-items: flex-end;
+    }
+  }
+
+  /* Show times badge on larger screens */
+  @media (min-width: 1024px) {
+    .es-times { display: block !important; }
+  }
+</style>
+
+<script type="module">
+  import { animate } from "https://cdn.jsdelivr.net/npm/motion@latest/+esm";
+
+  // — Glacier Split —
+  animate('[data-gs="badge"]',  { opacity: [0,1], y: [10,0] }, { duration: 0.5, delay: 0.15 });
+  animate('[data-gs="title"]',  { opacity: [0,1], y: [18,0] }, { duration: 0.65, delay: 0.3 });
+  animate('[data-gs="desc"]',   { opacity: [0,1], y: [14,0] }, { duration: 0.55, delay: 0.5 });
+  animate('[data-gs="ctas"]',   { opacity: [0,1], y: [14,0] }, { duration: 0.5, delay: 0.65 });
+  animate('[data-gs="trust"]',  { opacity: [0,1] },            { duration: 0.6, delay: 0.9 });
+  animate('[data-gs="image"]',  { opacity: [0,1], x: [18,0] }, { duration: 0.75, delay: 0.35 });
+
+  // — Neon Fade —
+  animate('[data-nf="badge"]',  { opacity: [0,1], y: [12,0] }, { duration: 0.5, delay: 0.2 });
+  animate('[data-nf="title"]',  { opacity: [0,1], y: [22,0] }, { duration: 0.7, delay: 0.4 });
+  animate('[data-nf="desc"]',   { opacity: [0,1], y: [15,0] }, { duration: 0.6, delay: 0.62 });
+  animate('[data-nf="ctas"]',   { opacity: [0,1], y: [15,0] }, { duration: 0.55, delay: 0.8 });
+  animate('[data-nf="trust"]',  { opacity: [0,1] },            { duration: 0.55, delay: 1.0 });
+  animate('[data-nf="scroll"]', { opacity: [0,0.4] },          { duration: 0.8, delay: 1.3 });
+
+  // — Editorial Stack —
+  animate('[data-es="badge"]',  { opacity: [0,1], y: [8,0] },   { duration: 0.45, delay: 0.15 });
+  animate('[data-es="word"]',   { opacity: [0,1], x: [-28,0] }, { duration: 0.85, delay: 0.3, easing: [0.22,1,0.36,1] });
+  animate('[data-es="line"]',   { opacity: [0,1], scaleX: [0,1] }, { duration: 0.75, delay: 0.75, easing: [0.22,1,0.36,1] });
+  animate('[data-es="sub"]',    { opacity: [0,1], y: [10,0] },  { duration: 0.55, delay: 0.95 });
+  animate('[data-es="cta"]',    { opacity: [0,1], y: [10,0] },  { duration: 0.5, delay: 1.1 });
+</script>
+
+</Base>

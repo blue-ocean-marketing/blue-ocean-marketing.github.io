@@ -1,0 +1,201 @@
+---
+// [Nav] Branchen Dock
+interface BrancheItem {
+  slug: string;
+  label: string;
+  icon: string;
+  color: string;
+  ready: boolean;
+}
+
+interface Props {
+  branchen: BrancheItem[];
+}
+
+const { branchen } = Astro.props;
+---
+
+<nav id="branchen-dock" role="navigation" aria-label="Branchen-Navigation">
+  <ul>
+    {branchen.map((b) => (
+      <li class="dock-icon">
+        {b.ready ? (
+          <a href={`/${b.slug}/`}>
+            <span class="tooltip">{b.label}</span>
+            <span
+              class="icon-face"
+              style={`background: ${b.color}22; border-color: ${b.color}40;`}
+            >
+              {b.icon}
+            </span>
+          </a>
+        ) : (
+          <div>
+            <span class="tooltip">{b.label} · bald</span>
+            <span class="icon-face disabled">
+              {b.icon}
+            </span>
+          </div>
+        )}
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  #branchen-dock {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    max-width: calc(100vw - 2rem);
+  }
+
+  #branchen-dock ul {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 8px 10px;
+    background: rgba(13, 13, 20, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+  }
+
+  #branchen-dock ul::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dock-icon {
+    --icon-size: 52px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    flex-shrink: 0;
+    transition:
+      width 150ms cubic-bezier(0.25, 1, 0.5, 1),
+      height 150ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .dock-icon a,
+  .dock-icon div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    text-decoration: none;
+  }
+
+  .icon-face {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    border: 1px solid;
+    font-size: 1.5rem;
+  }
+
+  .icon-face.disabled {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(13, 13, 20, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.3rem 0.65rem;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms;
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+
+  .dock-icon:hover .tooltip {
+    opacity: 1;
+  }
+
+  /* Magnification — nur auf Geräten mit Hover (Desktop) */
+  @media (hover: hover) {
+    .dock-icon:hover {
+      width: calc(var(--icon-size) * 1.5);
+      height: calc(var(--icon-size) * 1.5);
+    }
+
+    .dock-icon:hover + .dock-icon {
+      width: calc(var(--icon-size) * 1.33 + var(--dock-offset-right, 0px));
+      height: calc(var(--icon-size) * 1.33 + var(--dock-offset-right, 0px));
+    }
+
+    .dock-icon:hover + .dock-icon + .dock-icon {
+      width: calc(var(--icon-size) * 1.17 + var(--dock-offset-right, 0px));
+      height: calc(var(--icon-size) * 1.17 + var(--dock-offset-right, 0px));
+    }
+
+    .dock-icon:has(+ .dock-icon:hover) {
+      width: calc(var(--icon-size) * 1.33 + var(--dock-offset-left, 0px));
+      height: calc(var(--icon-size) * 1.33 + var(--dock-offset-left, 0px));
+    }
+
+    .dock-icon:has(+ .dock-icon + .dock-icon:hover) {
+      width: calc(var(--icon-size) * 1.17 + var(--dock-offset-left, 0px));
+      height: calc(var(--icon-size) * 1.17 + var(--dock-offset-left, 0px));
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 480px) {
+    .dock-icon {
+      --icon-size: 46px;
+    }
+
+    .icon-face {
+      border-radius: 12px;
+      font-size: 1.3rem;
+    }
+  }
+</style>
+
+<script>
+  const dock = document.getElementById('branchen-dock');
+  const icons = dock?.querySelectorAll<HTMLElement>('.dock-icon');
+  const MAX_OFFSET = 5;
+
+  icons?.forEach((icon) => {
+    icon.addEventListener('mousemove', (e: MouseEvent) => {
+      if (!dock) return;
+      const rect = icon.getBoundingClientRect();
+      const cursorPos = (e.clientX - rect.left) / rect.width;
+      const offset = Math.floor((cursorPos * 2 - 1) * MAX_OFFSET);
+      dock.style.setProperty('--dock-offset-left', `${-offset}px`);
+      dock.style.setProperty('--dock-offset-right', `${offset}px`);
+    });
+  });
+
+  dock?.addEventListener('mouseleave', () => {
+    dock.style.removeProperty('--dock-offset-left');
+    dock.style.removeProperty('--dock-offset-right');
+  });
+</script>

@@ -3,3 +3,11 @@ dist/
 .astro/
 .env
 .env.*
+
+# Echte Kundendaten — nie ins öffentliche Repo (Cyber-Sicherheit, Phase 0)
+# Schema + Beispiel bleiben getrackt, alle echten Kunden-Configs/-Bilder NICHT.
+clients/*.json
+!clients/_schema.json
+!clients/beispielkunde.json
+src/assets/clients/*
+!src/assets/clients/.gitkeep

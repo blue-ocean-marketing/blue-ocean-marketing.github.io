@@ -1,394 +1,45 @@
 ---
-const praxis = {
-  name: 'Zahnarztpraxis Müller',
-  slogan: 'Ihr Lächeln. Unsere Leidenschaft.',
-  adresse: 'Hauptstraße 12, 75172 Pforzheim',
-  telefon: '07231 / 123 456',
-  email: 'info@praxis-mueller.de',
-  oeffnung: 'Mo–Fr 8:00–18:00 Uhr',
+// Öffentliche Showcase-Seite /zahnarzt — speist das Branchen-Template mit Demo-Daten.
+// Einzige Wahrheit für die Optik ist jetzt src/templates/zahnarzt/ZahnarztTemplate.astro;
+// hier nur die Beispiel-Config (Form: clients/_schema.json).
+import ZahnarztTemplate from '../../templates/zahnarzt/ZahnarztTemplate.astro';
+
+const config = {
+  schema_version: 1,
+  slug: 'zahnarzt',
+  branche: 'zahnarzt',
+  marke: {
+    name: 'Zahnarztpraxis Müller',
+    slogan: 'Ihr Lächeln. Unsere Leidenschaft.',
+    logo: null,
+    farben: { primary: '#0096c7', secondary: '#52b788', accent: '#c77dff' },
+  },
+  kontakt: {
+    adresse: 'Hauptstraße 12, 75172 Pforzheim',
+    telefon: '07231 / 123 456',
+    email: 'info@praxis-mueller.de',
+    oeffnung: 'Mo–Fr 8:00–18:00 Uhr',
+  },
+  leistungen: [
+    { icon: '🦷', titel: 'Professionelle Reinigung', text: 'Gründliche Zahnreinigung für ein strahlendes Lächeln und gesundes Zahnfleisch.' },
+    { icon: '🔬', titel: 'Prophylaxe', text: 'Vorsorge ist besser als Nachsorge — mit individuellen Präventionsprogrammen.' },
+    { icon: '✨', titel: 'Bleaching', text: 'Professionelles Aufhellen für bis zu 6 Nuancen hellere Zähne.' },
+    { icon: '🦺', titel: 'Implantologie', text: 'Hochwertige Zahnimplantate als dauerhafte Lösung bei Zahnverlust.' },
+    { icon: '😁', titel: 'Zahnersatz', text: 'Kronen, Brücken und Prothesen — individuell angepasst für Sie.' },
+    { icon: '👶', titel: 'Kinderzahnheilkunde', text: 'Sanfte Behandlung in entspannter Atmosphäre — auch für die Kleinsten.' },
+  ],
+  team: [
+    { name: 'Dr. Anna Müller', rolle: 'Inhaberin & Zahnärztin', initialen: 'AM', bild: null },
+    { name: 'Thomas Schneider', rolle: 'Zahnarzt', initialen: 'TS', bild: null },
+    { name: 'Lisa Wagner', rolle: 'Prophylaxe-Assistentin', initialen: 'LW', bild: null },
+    { name: 'Marc Hoffmann', rolle: 'Zahnarzt', initialen: 'MH', bild: null },
+  ],
+  bewertungen: [
+    { name: 'Petra K.', sterne: 5, text: 'Endlich ein Zahnarzt, bei dem ich keine Angst mehr habe. Das ganze Team ist unglaublich einfühlsam und professionell.' },
+    { name: 'Klaus M.', sterne: 5, text: 'Moderne Praxis, keine langen Wartezeiten und faire Preise. Ich komme seit Jahren hierher.' },
+    { name: 'Sandra R.', sterne: 5, text: 'Das Bleaching hat fantastisch funktioniert! Ich bin begeistert vom Ergebnis.' },
+  ],
+  meta: { quelle: 'manuell', leadbook_lead_id: null, domain_ist: null, erstellt_am: null, notiz: 'Showcase-Demo' },
 };
-
-const leistungen = [
-  { icon: '🦷', titel: 'Professionelle Reinigung', text: 'Gründliche Zahnreinigung für ein strahlendes Lächeln und gesundes Zahnfleisch.' },
-  { icon: '🔬', titel: 'Prophylaxe', text: 'Vorsorge ist besser als Nachsorge — mit individuellen Präventionsprogrammen.' },
-  { icon: '✨', titel: 'Bleaching', text: 'Professionelles Aufhellen für bis zu 6 Nuancen hellere Zähne.' },
-  { icon: '🦺', titel: 'Implantologie', text: 'Hochwertige Zahnimplantate als dauerhafte Lösung bei Zahnverlust.' },
-  { icon: '😁', titel: 'Zahnersatz', text: 'Kronen, Brücken und Prothesen — individuell angepasst für Sie.' },
-  { icon: '👶', titel: 'Kinderzahnheilkunde', text: 'Sanfte Behandlung in entspannter Atmosphäre — auch für die Kleinsten.' },
-];
-
-const team = [
-  { name: 'Dr. Anna Müller', rolle: 'Inhaberin & Zahnärztin', avatar: 'AM', farbe: '#0096c7' },
-  { name: 'Thomas Schneider', rolle: 'Zahnarzt', avatar: 'TS', farbe: '#52b788' },
-  { name: 'Lisa Wagner', rolle: 'Prophylaxe-Assistentin', avatar: 'LW', farbe: '#c77dff' },
-  { name: 'Marc Hoffmann', rolle: 'Zahnarzt', avatar: 'MH', farbe: '#f4845f' },
-];
-
-const bewertungen = [
-  { name: 'Petra K.', sterne: 5, text: 'Endlich ein Zahnarzt, bei dem ich keine Angst mehr habe. Das ganze Team ist unglaublich einfühlsam und professionell.' },
-  { name: 'Klaus M.', sterne: 5, text: 'Moderne Praxis, keine langen Wartezeiten und faire Preise. Ich komme seit Jahren hierher.' },
-  { name: 'Sandra R.', sterne: 5, text: 'Das Bleaching hat fantastisch funktioniert! Ich bin begeistert vom Ergebnis.' },
-];
 ---
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{praxis.name} — {praxis.slogan}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=optional" rel="stylesheet" />
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, sans-serif; color: #1e293b; background: #fff; }
-    .serif { font-family: 'Playfair Display', Georgia, serif; }
-
-    /* DEMO BANNER */
-    .demo-banner {
-      background: #0d0d14;
-      color: #94a3b8;
-      text-align: center;
-      padding: 0.6rem 1rem;
-      font-size: 0.75rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid rgba(0,150,199,0.3);
-    }
-    .demo-banner a { color: #0096c7; text-decoration: none; font-weight: 600; }
-
-    /* NAV */
-    nav {
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 37px;
-      z-index: 50;
-    }
-    .nav-logo { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
-    .nav-logo span { color: #0096c7; }
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
-    .nav-links a { color: #475569; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
-    .nav-cta {
-      background: #0096c7; color: white;
-      padding: 0.6rem 1.5rem; border-radius: 8px;
-      font-size: 0.875rem; font-weight: 600;
-      text-decoration: none; border: none; cursor: pointer;
-    }
-
-    /* HERO */
-    .hero {
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
-      padding: 5rem 2rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      align-items: center;
-    }
-    @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; gap: 2rem; }
-      .nav-links { display: none; }
-    }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      background: rgba(0,150,199,0.12); color: #0077a3;
-      border: 1px solid rgba(0,150,199,0.25);
-      border-radius: 100px; padding: 0.375rem 1rem;
-      font-size: 0.78rem; font-weight: 600; margin-bottom: 1.5rem;
-    }
-    .hero h1 {
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 700; line-height: 1.2;
-      color: #0f172a; margin-bottom: 1.25rem;
-    }
-    .hero p { color: #475569; font-size: 1.05rem; line-height: 1.7; margin-bottom: 2rem; }
-    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .btn-primary {
-      background: #0096c7; color: white;
-      padding: 0.875rem 2rem; border-radius: 10px;
-      font-size: 0.95rem; font-weight: 600;
-      text-decoration: none;
-    }
-    .btn-secondary {
-      background: transparent; color: #0096c7;
-      border: 2px solid #0096c7;
-      padding: 0.875rem 2rem; border-radius: 10px;
-      font-size: 0.95rem; font-weight: 600;
-      text-decoration: none;
-    }
-    .hero-card {
-      background: white; border-radius: 20px;
-      padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-    }
-    .hero-card h3 { color: #0f172a; font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; }
-    .info-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem; font-size: 0.875rem; color: #475569; }
-    .info-icon { width: 36px; height: 36px; background: #f0f9ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
-
-    /* SECTION */
-    section { padding: 5rem 2rem; }
-    .section-inner { max-width: 1100px; margin: 0 auto; }
-    .section-header { text-align: center; margin-bottom: 3rem; }
-    .section-label { font-size: 0.78rem; font-weight: 700; color: #0096c7; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
-    .section-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; color: #0f172a; margin-bottom: 0.75rem; }
-    .section-sub { color: #64748b; font-size: 0.975rem; max-width: 560px; margin: 0 auto; line-height: 1.6; }
-
-    /* LEISTUNGEN GRID */
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
-    .leistung-card {
-      background: #f8fafc; border: 1px solid #e2e8f0;
-      border-radius: 16px; padding: 1.75rem;
-      transition: box-shadow 0.2s, transform 0.2s;
-    }
-    .leistung-card:hover { box-shadow: 0 8px 30px rgba(0,150,199,0.12); transform: translateY(-2px); }
-    .leistung-icon { font-size: 2rem; margin-bottom: 1rem; }
-    .leistung-card h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem; }
-    .leistung-card p { color: #64748b; font-size: 0.875rem; line-height: 1.6; }
-
-    /* TEAM */
-    .team-bg { background: #f8fafc; }
-    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem; }
-    .team-card { background: white; border-radius: 16px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .avatar { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; color: white; margin: 0 auto 1rem; }
-    .team-card h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin-bottom: 0.25rem; }
-    .team-card p { color: #64748b; font-size: 0.8rem; }
-
-    /* BEWERTUNGEN */
-    .grid-bewertungen { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
-    .bew-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; }
-    .sterne { color: #f59e0b; font-size: 1rem; margin-bottom: 0.75rem; }
-    .bew-card p { color: #475569; font-size: 0.9rem; line-height: 1.65; margin-bottom: 1rem; font-style: italic; }
-    .bew-name { font-size: 0.85rem; font-weight: 600; color: #0f172a; }
-
-    /* KONTAKT */
-    .kontakt-bg { background: linear-gradient(135deg, #0077a3, #0096c7); color: white; }
-    .kontakt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
-    @media (max-width: 768px) { .kontakt-grid { grid-template-columns: 1fr; } }
-    .kontakt-bg h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 1rem; }
-    .kontakt-bg p { opacity: 0.85; line-height: 1.7; margin-bottom: 1.5rem; }
-    .kontakt-btn { display: inline-block; background: white; color: #0077a3; padding: 0.875rem 2rem; border-radius: 10px; font-weight: 600; text-decoration: none; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%; padding: 0.75rem 1rem;
-      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 8px; color: white; font-size: 0.9rem; font-family: inherit;
-    }
-    .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(255,255,255,0.6); }
-    .form-group select option { color: #0f172a; background: white; }
-    .form-btn {
-      width: 100%; background: white; color: #0077a3;
-      padding: 0.875rem; border-radius: 8px;
-      font-weight: 700; font-size: 0.95rem;
-      border: none; cursor: pointer;
-    }
-
-    /* FOOTER */
-    footer { background: #0f172a; color: #64748b; padding: 2rem; text-align: center; font-size: 0.8rem; }
-    footer a { color: #94a3b8; text-decoration: none; margin: 0 0.5rem; }
-  </style>
-</head>
-<body>
-
-<!-- DEMO BANNER -->
-<div class="demo-banner">
-  🎨 Dies ist eine Musterseite von <a href="/" >Blue Ocean Marketing</a> — personalisiert mit Ihrem Logo &amp; Ihren Farben in 48h.
-  <a href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener" style="margin-left: 0.75rem; background: #0096c7; color: white; padding: 0.2rem 0.75rem; border-radius: 4px;">Demo anfragen →</a>
-</div>
-
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">{praxis.name.split(' ')[0]} <span>{praxis.name.split(' ').slice(1).join(' ')}</span></div>
-  <ul class="nav-links">
-    <li><a href="#leistungen">Leistungen</a></li>
-    <li><a href="#team">Unser Team</a></li>
-    <li><a href="#bewertungen">Bewertungen</a></li>
-    <li><a href="#kontakt">Kontakt</a></li>
-  </ul>
-  <a href={`tel:${praxis.telefon.replace(/\s/g,'')}`} class="nav-cta">📞 Termin vereinbaren</a>
-</nav>
-
-<!-- HERO -->
-<div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%); padding: 0 2rem;">
-  <div class="hero">
-    <div>
-      <div class="hero-badge">⭐ 4,9 / 5 — über 200 Bewertungen</div>
-      <h1>{praxis.slogan}</h1>
-      <p>Moderne Zahnmedizin in {praxis.adresse.split(',')[1].trim()} — einfühlsam, schmerzfrei und auf dem neuesten Stand der Technik.</p>
-      <div class="hero-actions">
-        <a href="#kontakt" class="btn-primary">Termin online buchen</a>
-        <a href="#leistungen" class="btn-secondary">Unsere Leistungen</a>
-      </div>
-    </div>
-    <div class="hero-card">
-      <h3>🗓️ Schnell einen Termin buchen</h3>
-      <div class="info-row">
-        <div class="info-icon">📍</div>
-        <span>{praxis.adresse}</span>
-      </div>
-      <div class="info-row">
-        <div class="info-icon">📞</div>
-        <span>{praxis.telefon}</span>
-      </div>
-      <div class="info-row">
-        <div class="info-icon">⏰</div>
-        <span>{praxis.oeffnung}</span>
-      </div>
-      <div class="info-row">
-        <div class="info-icon">✉️</div>
-        <span>{praxis.email}</span>
-      </div>
-      <a href="#kontakt" style="display: block; background: #0096c7; color: white; text-align: center; padding: 0.875rem; border-radius: 10px; font-weight: 600; text-decoration: none; margin-top: 1.25rem;">
-        Jetzt Termin anfragen →
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- VERTRAUEN -->
-<section style="padding: 2rem; background: white; border-bottom: 1px solid #f1f5f9;">
-  <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; text-align: center;">
-    {[
-      { val: '15+', label: 'Jahre Erfahrung' },
-      { val: '3.500+', label: 'Zufriedene Patienten' },
-      { val: '4,9 ⭐', label: 'Ø Bewertung' },
-      { val: '0', label: 'Wartezeit mit Termin' },
-    ].map(s => (
-      <div>
-        <div style="font-size: 1.6rem; font-weight: 700; color: #0096c7;">{s.val}</div>
-        <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.2rem;">{s.label}</div>
-      </div>
-    ))}
-  </div>
-</section>
-
-<!-- LEISTUNGEN -->
-<section id="leistungen">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="section-label">Was wir anbieten</div>
-      <h2 class="section-title">Unsere Leistungen</h2>
-      <p class="section-sub">Von der Vorsorge bis zur kosmetischen Zahnmedizin — alles aus einer Hand.</p>
-    </div>
-    <div class="grid-3">
-      {leistungen.map(l => (
-        <div class="leistung-card">
-          <div class="leistung-icon">{l.icon}</div>
-          <h3>{l.titel}</h3>
-          <p>{l.text}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
-<!-- TEAM -->
-<section id="team" class="team-bg">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="section-label">Wir sind für Sie da</div>
-      <h2 class="section-title">Unser Team</h2>
-      <p class="section-sub">Erfahren, einfühlsam und stets auf dem neuesten Stand der Zahnmedizin.</p>
-    </div>
-    <div class="grid-4">
-      {team.map(t => (
-        <div class="team-card">
-          <div class="avatar" style={`background: ${t.farbe};`}>{t.avatar}</div>
-          <h3>{t.name}</h3>
-          <p>{t.rolle}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
-<!-- BEWERTUNGEN -->
-<section id="bewertungen">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="section-label">Was Patienten sagen</div>
-      <h2 class="section-title">Bewertungen</h2>
-      <p class="section-sub">Über 200 Bewertungen mit durchschnittlich 4,9 von 5 Sternen.</p>
-    </div>
-    <div class="grid-bewertungen">
-      {bewertungen.map(b => (
-        <div class="bew-card">
-          <div class="sterne">{'★'.repeat(b.sterne)}</div>
-          <p>„{b.text}"</p>
-          <div class="bew-name">— {b.name}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
-<!-- KONTAKT -->
-<section id="kontakt" class="kontakt-bg">
-  <div class="section-inner">
-    <div class="kontakt-grid">
-      <div>
-        <h2>Termin vereinbaren</h2>
-        <p>Rufen Sie uns an oder schreiben Sie uns — wir melden uns innerhalb von 24 Stunden bei Ihnen.</p>
-        <div style="display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 2rem;">
-          <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-            <span style="font-size: 1.2rem;">📞</span> {praxis.telefon}
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-            <span style="font-size: 1.2rem;">✉️</span> {praxis.email}
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-            <span style="font-size: 1.2rem;">📍</span> {praxis.adresse}
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-            <span style="font-size: 1.2rem;">⏰</span> {praxis.oeffnung}
-          </div>
-        </div>
-      </div>
-      <div>
-        <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 2rem;">
-          <h3 style="color: white; font-weight: 600; margin-bottom: 1.25rem;">Terminanfrage</h3>
-          <div class="form-group">
-            <input type="text" placeholder="Ihr Name" />
-          </div>
-          <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <input type="tel" placeholder="Telefon" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 0.9rem;" />
-            <input type="email" placeholder="E-Mail" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 0.9rem;" />
-          </div>
-          <div class="form-group">
-            <select style="width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: rgba(255,255,255,0.8); font-size: 0.9rem; font-family: inherit;">
-              <option value="">Gewünschte Leistung</option>
-              <option>Professionelle Reinigung</option>
-              <option>Bleaching</option>
-              <option>Implantologie</option>
-              <option>Zahnersatz</option>
-              <option>Notfallbehandlung</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <textarea rows="3" placeholder="Ihre Nachricht (optional)" style="width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 0.9rem; font-family: inherit; resize: vertical;"></textarea>
-          </div>
-          <button class="form-btn">Terminanfrage senden →</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <p>{praxis.name} | {praxis.adresse} | {praxis.telefon}</p>
-  <p style="margin-top: 0.5rem;">
-    <a href="#">Impressum</a> · <a href="#">Datenschutz</a> · <a href="#">Barrierefreiheit</a>
-  </p>
-  <p style="margin-top: 0.75rem; font-size: 0.72rem; opacity: 0.5;">
-    Demo-Website erstellt von <a href="/" style="color: #0096c7;">Blue Ocean Marketing</a>
-  </p>
-</footer>
-
-</body>
-</html>
+<ZahnarztTemplate config={config} />

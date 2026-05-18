@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "slug": "beispielkunde",
+  "branche": "zahnarzt",
+  "marke": {
+    "name": "Zahnarztpraxis Beispiel",
+    "slogan": "Ihr Lächeln. Unsere Leidenschaft.",
+    "logo": null,
+    "farben": {
+      "primary": "#0096c7",
+      "secondary": "#52b788",
+      "accent": "#c77dff"
+    }
+  },
+  "kontakt": {
+    "adresse": "Musterstraße 1, 75172 Pforzheim",
+    "telefon": "07231 / 000 000",
+    "email": "info@beispielpraxis.de",
+    "oeffnung": "Mo–Fr 8:00–18:00 Uhr",
+    "maps_query": "Musterstraße 1, 75172 Pforzheim"
+  },
+  "hero": {
+    "ueberschrift": "Moderne Zahnheilkunde in Pforzheim",
+    "text": "Sanfte Behandlung, faire Preise, keine langen Wartezeiten.",
+    "bild": null,
+    "cta_text": "Termin anfragen",
+    "cta_ziel": "#kontakt"
+  },
+  "leistungen": [
+    { "icon": "🦷", "titel": "Professionelle Reinigung", "text": "Gründliche Zahnreinigung für ein strahlendes Lächeln." },
+    { "icon": "✨", "titel": "Bleaching", "text": "Professionelles Aufhellen für hellere Zähne." },
+    { "icon": "🦺", "titel": "Implantologie", "text": "Hochwertige Implantate als dauerhafte Lösung." }
+  ],
+  "team": [
+    { "name": "Dr. Beispiel", "rolle": "Inhaber & Zahnarzt", "bild": null, "initialen": "DB" }
+  ],
+  "bewertungen": [
+    { "name": "Petra K.", "sterne": 5, "text": "Endlich ein Zahnarzt ohne Angst — sehr einfühlsames Team." }
+  ],
+  "galerie": [],
+  "meta": {
+    "quelle": "manuell",
+    "leadbook_lead_id": null,
+    "domain_ist": null,
+    "erstellt_am": "2026-05-17",
+    "notiz": "Beispiel-Config zum Schema-Test — keine echten Daten."
+  }
+}

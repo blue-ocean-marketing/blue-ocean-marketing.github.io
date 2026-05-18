@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blue-ocean.marketing/schemas/client-config-1.json",
+  "title": "Blue Ocean Demo-Kundenseite — Config",
+  "description": "Einzige Wahrheit pro Kunde. Der Python-Generator (generator/generate.py) liest diese Datei, Astro baut daraus die Seite unter /kunde/<slug>/. WICHTIG: Genau dieses Schema füllt später generator/leadbook_import.py automatisch aus LeadBook-Leads — Felder nicht umbenennen ohne den Import mitzudenken.",
+  "type": "object",
+  "required": ["schema_version", "slug", "branche", "marke", "kontakt", "meta"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "description": "Schema-Version. Bei Breaking Changes hochzählen + Generator-Migration."
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "URL-Segment. Seite erscheint unter /kunde/<slug>/. Nur Kleinbuchstaben, Ziffern, Bindestrich."
+    },
+    "branche": {
+      "type": "string",
+      "enum": ["zahnarzt", "kosmetik", "restaurant", "physiotherapie", "immobilien", "handwerk"],
+      "description": "Bestimmt welches Branchen-Template aus src/templates/ gerendert wird."
+    },
+    "marke": {
+      "type": "object",
+      "required": ["name", "farben"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Firmenname (LeadBook: Lead.name)." },
+        "slogan": { "type": ["string", "null"] },
+        "logo": {
+          "type": ["string", "null"],
+          "description": "Dateiname relativ zu src/assets/clients/<slug>/ (z.B. 'logo.png'). null = kein Logo, dann Textmarke."
+        },
+        "farben": {
+          "type": "object",
+          "required": ["primary"],
+          "additionalProperties": false,
+          "properties": {
+            "primary":   { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "secondary": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "accent":    { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }
+          }
+        }
+      }
+    },
+    "kontakt": {
+      "type": "object",
+      "required": ["telefon", "email"],
+      "additionalProperties": false,
+      "properties": {
+        "adresse":    { "type": ["string", "null"] },
+        "telefon":    { "type": "string" },
+        "email":      { "type": "string", "format": "email" },
+        "oeffnung":   { "type": ["string", "null"], "description": "z.B. 'Mo–Fr 8:00–18:00 Uhr'" },
+        "instagram":  { "type": ["string", "null"], "description": "Social-Handle, z.B. '@studio' (v.a. Beauty/Gastro). Optional." },
+        "maps_query": { "type": ["string", "null"], "description": "Adresse/Suchbegriff für eingebettete Karte." }
+      }
+    },
+    "hero": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ueberschrift": { "type": "string" },
+        "text":         { "type": "string" },
+        "bild":         { "type": ["string", "null"], "description": "Dateiname rel. zu src/assets/clients/<slug>/. Wird via astro:assets optimiert." },
+        "cta_text":     { "type": "string" },
+        "cta_ziel":     { "type": "string", "description": "Anker (#kontakt) oder URL." }
+      }
+    },
+    "leistungen": {
+      "type": "array",
+      "description": "Leistungs-/Service-Kacheln.",
+      "items": {
+        "type": "object",
+        "required": ["titel"],
+        "additionalProperties": false,
+        "properties": {
+          "icon":  { "type": "string", "description": "Emoji oder Icon-Name." },
+          "titel": { "type": "string" },
+          "text":  { "type": "string", "description": "Beschreibung. Bei reinen Preislisten-Branchen optional." },
+          "preis": { "type": "string", "description": "Optional, z.B. 'ab 79 €' (Beauty/Gastro/Handwerk)." },
+          "dauer": { "type": "string", "description": "Optional, z.B. '60 Min.'" },
+          "hot":   { "type": "boolean", "description": "Optional — als 'Beliebt' hervorheben." }
+        }
+      }
+    },
+    "team": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "rolle"],
+        "additionalProperties": false,
+        "properties": {
+          "name":      { "type": "string" },
+          "rolle":     { "type": "string" },
+          "bild":      { "type": ["string", "null"], "description": "Dateiname rel. zu src/assets/clients/<slug>/." },
+          "initialen": { "type": ["string", "null"], "description": "Fallback wenn kein Bild (z.B. 'AM')." }
+        }
+      }
+    },
+    "bewertungen": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "sterne", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "name":   { "type": "string" },
+          "sterne": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "text":   { "type": "string" }
+        }
+      }
+    },
+    "galerie": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["bild"],
+        "additionalProperties": false,
+        "properties": {
+          "bild": { "type": "string", "description": "Dateiname rel. zu src/assets/clients/<slug>/." },
+          "alt":  { "type": "string" }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Herkunft & Naht zu LeadBook. Jetzt immer quelle='manuell'. Ab Phase 4+ setzt leadbook_import.py quelle='leadbook' + leadbook_lead_id.",
+      "required": ["quelle"],
+      "additionalProperties": false,
+      "properties": {
+        "quelle":           { "enum": ["manuell", "leadbook"] },
+        "leadbook_lead_id": { "type": ["integer", "null"], "description": "LeadBook Lead.id — gesetzt sobald der Import aktiv ist." },
+        "domain_ist":       { "type": ["string", "null"], "description": "Bestehende (schwache) Website des Leads, falls vorhanden — fürs Pitch-Argument." },
+        "erstellt_am":      { "type": ["string", "null"], "format": "date" },
+        "notiz":            { "type": ["string", "null"] }
+      }
+    }
+  }
+}

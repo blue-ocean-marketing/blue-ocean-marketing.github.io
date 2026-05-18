@@ -1,0 +1,61 @@
+---
+// Dynamische Kundenseite: /kunde/<slug>/
+// Liest zur Build-Zeit alle clients/*.json (ausser _schema.json), prüft sie
+// leichtgewichtig und rendert das zur Branche passende Template.
+// (Volle Schema-Validierung macht der Python-Generator in Phase 2 — hier nur
+//  ein Guard, damit eine kaputte JSON nicht den ganzen Build sprengt.)
+// Hinweis: Astro hoistet getStaticPaths in einen eigenen Kontext — Helfer
+// müssen INNERHALB der Funktion liegen, nur Imports sind dort sichtbar.
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import ZahnarztTemplate from '../../templates/zahnarzt/ZahnarztTemplate.astro';
+import KosmetikTemplate from '../../templates/kosmetik/KosmetikTemplate.astro';
+import ImmobilienTemplate from '../../templates/immobilien/ImmobilienTemplate.astro';
+
+const TEMPLATES: Record<string, any> = {
+  zahnarzt: ZahnarztTemplate,
+  kosmetik: KosmetikTemplate,
+  immobilien: ImmobilienTemplate,
+};
+
+export function getStaticPaths() {
+  const unterstuetzt = ['zahnarzt', 'kosmetik', 'immobilien'];
+
+  const istGueltig = (c: any): boolean =>
+    c &&
+    typeof c.slug === 'string' &&
+    typeof c.branche === 'string' &&
+    c.marke?.name &&
+    c.marke?.farben?.primary &&
+    c.kontakt?.telefon &&
+    c.kontakt?.email;
+
+  const dir = resolve(process.cwd(), 'clients');
+  const paths: { params: { slug: string }; props: { config: any } }[] = [];
+
+  for (const datei of readdirSync(dir)) {
+    if (!datei.endsWith('.json') || datei === '_schema.json') continue;
+    let config: any;
+    try {
+      config = JSON.parse(readFileSync(join(dir, datei), 'utf-8'));
+    } catch {
+      console.warn(`[kunde] ${datei}: kein gültiges JSON — übersprungen.`);
+      continue;
+    }
+    if (!istGueltig(config)) {
+      console.warn(`[kunde] ${datei}: Pflichtfelder fehlen — übersprungen.`);
+      continue;
+    }
+    if (!unterstuetzt.includes(config.branche)) {
+      console.warn(`[kunde] ${datei}: Branche "${config.branche}" hat noch kein Template — übersprungen.`);
+      continue;
+    }
+    paths.push({ params: { slug: config.slug }, props: { config } });
+  }
+  return paths;
+}
+
+const { config } = Astro.props;
+const Template = TEMPLATES[config.branche];
+---
+<Template config={config} />

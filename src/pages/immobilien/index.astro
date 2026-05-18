@@ -1,0 +1,53 @@
+---
+// Öffentliche Showcase-Seite /immobilien — speist das Branchen-Template mit Demo-Daten.
+// Einzige Wahrheit für die Optik ist src/templates/immobilien/ImmobilienTemplate.astro;
+// hier nur die Beispiel-Config (Form: clients/_schema.json).
+import ImmobilienTemplate from '../../templates/immobilien/ImmobilienTemplate.astro';
+
+const config = {
+  schema_version: 1,
+  slug: 'immobilien',
+  branche: 'immobilien',
+  marke: {
+    name: 'Beyond Estates',
+    slogan: 'Privatmaklerei für außergewöhnliche Wohnobjekte',
+    logo: null,
+    farben: { primary: '#b08d57', secondary: '#2a2a2a', accent: '#c8a875' },
+  },
+  kontakt: {
+    adresse: 'Maximilianstraße 14, 80539 München',
+    telefon: '089 / 21 54 880',
+    email: 'kontakt@beyond-estates.de',
+    oeffnung: 'Termine nach Vereinbarung',
+    instagram: '@beyond.estates',
+  },
+  hero: {
+    ueberschrift: 'Für Immobilien, die alles sind. Außer gewöhnlich.',
+    text: 'Diskrete Vermittlung erlesener Wohnobjekte in München und Umgebung — kuratiert, persönlich, ohne Kompromiss.',
+    cta_text: 'Beratungstermin',
+    cta_ziel: '#kontakt',
+  },
+  // leistungen[] = Objekte: titel=Name · text=Typ/Größe · preis=Preis · dauer=Lage · hot=Exklusiv-Badge
+  leistungen: [
+    { titel: 'Grace', text: 'Penthouse · 4 Zimmer · 182 m² · Dachterrasse', preis: 'ab € 2.450.000', dauer: 'München · Bogenhausen', hot: true },
+    { titel: 'Ruban', text: 'Freistehende Stadtvilla · 7 Zimmer · 310 m²', preis: 'ab € 3.900.000', dauer: 'Grünwald · Isarhang' },
+    { titel: 'Finest', text: 'Maisonette · 3,5 Zimmer · 146 m² · Altbau', preis: 'ab € 1.780.000', dauer: 'München · Lehel' },
+    { titel: 'The View', text: 'Penthouse · 5 Zimmer · 240 m² · Skyline-Blick', preis: 'ab € 4.200.000', dauer: 'München · Schwabing', hot: true },
+    { titel: 'Lumen', text: 'Gartenwohnung · 4 Zimmer · 168 m² · Südlage', preis: 'ab € 1.640.000', dauer: 'München · Harlaching' },
+    { titel: 'Atrium', text: 'Architektenhaus · 6 Zimmer · 285 m² · Pool', preis: 'ab € 3.250.000', dauer: 'Starnberg · Seenähe' },
+  ],
+  team: [
+    { name: 'Dr. Charlotte von Berg', rolle: 'Inhaberin & Maklerin', initialen: 'CB', bild: null },
+    { name: 'Maximilian Reuter', rolle: 'Senior Berater', initialen: 'MR', bild: null },
+    { name: 'Sophie Lindqvist', rolle: 'Beraterin · Premiumobjekte', initialen: 'SL', bild: null },
+  ],
+  bewertungen: [
+    { name: 'Familie K., München', sterne: 5, text: 'Der Verkauf unserer Villa lief absolut diskret und überraschend schnell. Man fühlt sich zu jedem Zeitpunkt in besten Händen.' },
+    { name: 'P. Hofmann, Grünwald', sterne: 5, text: 'Hervorragende Marktkenntnis und eine Inszenierung des Objekts auf einem Niveau, das wir woanders nicht gesehen haben.' },
+    { name: 'Dr. S. Brandt, Starnberg', sterne: 5, text: 'Vom ersten Gespräch bis zum Notartermin alles aus einer Hand. Professioneller geht es nicht.' },
+  ],
+  galerie: [],
+  meta: { quelle: 'manuell', leadbook_lead_id: null, domain_ist: null, erstellt_am: null, notiz: 'Showcase-Demo' },
+};
+---
+<ImmobilienTemplate config={config} />

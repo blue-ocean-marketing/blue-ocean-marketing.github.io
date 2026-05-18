@@ -1,0 +1,4 @@
+# Blue Ocean Demo-Generator — Python-Abhängigkeiten
+# Installieren:  pip install -r generator/requirements.txt
+# (System-Python 3.12; jsonschema-Version exakt gepinnt für reproduzierbare Validierung)
+jsonschema==4.26.0

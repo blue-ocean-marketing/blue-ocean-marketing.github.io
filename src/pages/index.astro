@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import BranchenDock from '../components/BranchenDock.astro';
 
 const branchen = [
   {
@@ -42,10 +43,10 @@ const branchen = [
     slug: 'immobilien',
     label: 'Immobilien',
     icon: '🏠',
-    desc: 'Hochwertig, präzise, vertrauensvoll.',
-    tags: ['Objekte', 'Bewertung', 'Kontakt'],
-    ready: false,
-    color: '#e9c46a',
+    desc: 'Puristisch, edel, foto-zentriert.',
+    tags: ['Objekt-Switch', 'Portfolio', 'Makler'],
+    ready: true,
+    color: '#b08d57',
   },
   {
     slug: 'handwerk',
@@ -73,7 +74,7 @@ const komponenten = [
   <!-- NAV -->
   <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(13,13,20,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;">
     <a href="https://blue-ocean.marketing" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 0.625rem; text-decoration: none;">
-      <div style="width: 32px; height: 32px; background: #0096c7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">🌊</div>
+      <img src="/logo.webp" alt="Blue Ocean Marketing" width="32" height="32" fetchpriority="high" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;" />
       <span style="font-weight: 600; color: #e2e8f0; font-size: 0.9rem;">Blue Ocean Marketing</span>
     </a>
     <a href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener" style="background: #0096c7; color: white; padding: 0.5rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none;">
@@ -188,7 +189,7 @@ const komponenten = [
   <!-- CTA SECTION -->
   <section style="padding: 6rem 2rem; max-width: 700px; margin: 0 auto; text-align: center;">
     <div style="background: linear-gradient(135deg, rgba(0,150,199,0.15) 0%, rgba(0,180,216,0.05) 100%); border: 1px solid rgba(0,150,199,0.25); border-radius: 24px; padding: 3.5rem 2rem;">
-      <div style="font-size: 2.5rem; margin-bottom: 1.25rem;">🌊</div>
+      <img src="/logo.webp" alt="Blue Ocean Marketing" width="72" height="72" style="width: 72px; height: 72px; margin: 0 auto 1.25rem; display: block;" />
       <h2 style="font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; color: #f1f5f9; margin: 0 0 1rem;">
         Ihre individuelle Demo in 48h
       </h2>
@@ -202,9 +203,11 @@ const komponenten = [
   </section>
 
   <!-- FOOTER -->
-  <footer style="border-top: 1px solid rgba(255,255,255,0.07); padding: 1.5rem 2rem; text-align: center;">
+  <footer style="border-top: 1px solid rgba(255,255,255,0.07); padding: 1.5rem 2rem 6rem; text-align: center;">
     <p style="color: #334155; font-size: 0.8rem; margin: 0;">
-      © 2025 Blue Ocean Marketing — <a href="https://blue-ocean.marketing/impressum/" style="color: #475569; text-decoration: none;">Impressum</a>
+      © 2026 Blue Ocean Marketing — <a href="https://blue-ocean.marketing/impressum/" style="color: #475569; text-decoration: none;">Impressum</a>
     </p>
   </footer>
+
+  <BranchenDock branchen={branchen} />
 </Base>
