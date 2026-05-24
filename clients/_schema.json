@@ -18,7 +18,7 @@
     },
     "branche": {
       "type": "string",
-      "enum": ["zahnarzt", "kosmetik", "restaurant", "physiotherapie", "immobilien", "handwerk"],
+      "enum": ["zahnarzt", "kosmetik", "restaurant", "physiotherapie", "immobilien", "handwerk", "golf"],
       "description": "Bestimmt welches Branchen-Template aus src/templates/ gerendert wird."
     },
     "marke": {
@@ -50,6 +50,7 @@
       "additionalProperties": false,
       "properties": {
         "adresse":    { "type": ["string", "null"] },
+        "stadt":      { "type": ["string", "null"], "description": "Reine Stadt (z.B. 'Pforzheim'). Wird im Hero als Tag angezeigt. Fallback: aus adresse extrahiert." },
         "telefon":    { "type": "string" },
         "email":      { "type": "string", "format": "email" },
         "oeffnung":   { "type": ["string", "null"], "description": "z.B. 'Mo–Fr 8:00–18:00 Uhr'" },

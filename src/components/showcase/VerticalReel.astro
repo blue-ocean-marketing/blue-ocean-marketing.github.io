@@ -1,0 +1,485 @@
+---
+// [Showcase] Vertical Reel
+// Auto-cycling Carousel: vertikal rotierendes Chip-Wheel links, Bild-Stack rechts.
+// Inspiration: 21st.dev FeatureCarousel — übersetzt nach Astro + Vanilla JS,
+// rohes CSS (kein Tailwind/React), Astro-Image für optimierte Bilder.
+//
+// Wiederverwendbar branchen-übergreifend:
+//   - Akzentfarbe via CSS-Var `--c-primary` aus dem Parent-Template (Fallback dunkel).
+//   - Items werden zyklisch mit dem `bilder`-Array gepaart (Index % bilder.length).
+//   - Pausiert bei Hover/Focus, Click auf Chip springt zum Item.
+//
+// Mobile: Layout wechselt zu Bild oben / Chips unten (Stack statt Split).
+import { Image } from 'astro:assets';
+
+interface Item {
+  titel: string;
+  text?: string;
+  icon?: string;
+  preis?: string;
+  dauer?: string;
+  hot?: boolean;
+}
+
+interface Props {
+  items: Item[];
+  bilder: ImageMetadata[];
+  intervalMs?: number;
+  hotLabel?: string;
+  liveLabel?: string;
+}
+
+const { items, bilder, intervalMs = 4000, hotLabel = 'Beliebt', liveLabel = 'Live' } = Astro.props;
+const count = items.length;
+---
+
+<div class="vr" data-vr-root data-vr-interval={intervalMs} data-vr-count={count}>
+  <div class="vr-stage">
+    <!-- Chip-Wheel -->
+    <div class="vr-wheel">
+      <div class="vr-wheel-fade vr-wheel-fade-top"></div>
+      <div class="vr-wheel-fade vr-wheel-fade-bottom"></div>
+      <div class="vr-wheel-rail">
+        {items.map((it, i) => (
+          <button class="vr-chip" data-vr-chip data-vr-i={i} type="button" aria-label={`Behandlung ${i + 1}: ${it.titel}`}>
+            {it.icon && <span class="vr-chip-ico" aria-hidden="true">{it.icon}</span>}
+            <span class="vr-chip-label">{it.titel}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Bild-Stack -->
+    <div class="vr-stack">
+      {items.map((it, i) => {
+        const img = bilder[i % bilder.length];
+        return (
+          <div class="vr-card" data-vr-card data-vr-i={i} aria-hidden={i !== 0 ? 'true' : 'false'}>
+            {img && (
+              <Image
+                class="vr-img"
+                src={img}
+                alt={it.titel}
+                widths={[420, 720, 1080]}
+                sizes="(min-width: 960px) 460px, 86vw"
+              />
+            )}
+            <div class="vr-overlay">
+              <div class="vr-meta">
+                <span class="vr-meta-num">{String(i + 1).padStart(2, '0')}</span>
+                <span class="vr-meta-sep">·</span>
+                <span class="vr-meta-label">{it.titel}</span>
+              </div>
+              {it.text && <p class="vr-desc">{it.text}</p>}
+              {(it.preis || it.dauer) && (
+                <div class="vr-foot">
+                  {it.preis && <span class="vr-preis">{it.preis}</span>}
+                  {it.dauer && <span class="vr-dauer">{it.dauer}</span>}
+                </div>
+              )}
+            </div>
+            {it.hot && <span class="vr-pill">{hotLabel}</span>}
+            <span class="vr-live"><span class="vr-live-dot"></span><span>{liveLabel}</span></span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
+<style>
+  .vr {
+    --vr-accent: var(--c-primary, #0f172a);
+    --vr-accent-dark: color-mix(in srgb, var(--vr-accent) 78%, #000);
+    --vr-line: color-mix(in srgb, var(--vr-accent) 16%, transparent);
+    --vr-soft: color-mix(in srgb, var(--vr-accent) 5%, #fff);
+    --vr-item-h: 60px;
+    width: 100%;
+  }
+  @media (min-width: 760px) {
+    .vr { --vr-item-h: 68px; }
+  }
+
+  .vr-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(300px, auto) minmax(420px, auto);
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid var(--vr-line);
+    background: var(--vr-soft);
+    min-height: 720px;
+  }
+  @media (max-width: 759px) {
+    .vr-stage { border-radius: 18px; min-height: 660px; }
+  }
+  @media (max-width: 400px) {
+    .vr-stage { min-height: 620px; grid-template-rows: minmax(260px, auto) minmax(380px, auto); }
+  }
+  @media (min-width: 960px) {
+    .vr-stage {
+      grid-template-columns: 0.85fr 1fr;
+      grid-template-rows: 1fr;
+      border-radius: 36px;
+      min-height: 620px;
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  /* ─── Wheel ─── */
+  .vr-wheel {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 100% at 0% 0%,
+        color-mix(in srgb, var(--vr-accent) 92%, #000) 0%,
+        var(--vr-accent-dark) 60%,
+        color-mix(in srgb, var(--vr-accent) 80%, #000) 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+  @media (min-width: 760px) { .vr-wheel { padding: 2.5rem 2rem; } }
+  @media (min-width: 960px) { .vr-wheel { padding: 3rem 2.5rem; justify-content: flex-start; } }
+
+  .vr-wheel-fade {
+    position: absolute; left: 0; right: 0; height: 70px;
+    z-index: 2; pointer-events: none;
+  }
+  .vr-wheel-fade-top {
+    top: 0;
+    background: linear-gradient(180deg, var(--vr-accent-dark) 0%, color-mix(in srgb, var(--vr-accent-dark) 75%, transparent) 50%, transparent 100%);
+  }
+  .vr-wheel-fade-bottom {
+    bottom: 0;
+    background: linear-gradient(0deg, var(--vr-accent-dark) 0%, color-mix(in srgb, var(--vr-accent-dark) 75%, transparent) 50%, transparent 100%);
+  }
+
+  .vr-wheel-rail {
+    position: relative;
+    width: 100%; height: var(--vr-item-h);
+    display: flex; align-items: center;
+  }
+
+  .vr-chip {
+    position: absolute;
+    left: 50%;
+    height: var(--vr-item-h);
+    min-height: 48px;
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    padding: 0 1.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: transparent;
+    color: rgba(255,255,255,0.55);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    opacity: 0;
+    transform: translate(-50%, 0);
+    transition:
+      transform 700ms cubic-bezier(.22,.61,.36,1),
+      opacity 500ms ease,
+      background 320ms ease, color 320ms ease, border-color 320ms ease;
+    will-change: transform, opacity;
+  }
+  @media (min-width: 960px) {
+    .vr-chip { left: 0; transform: translate(0,0); padding: 0 1.6rem; font-size: 0.86rem; }
+  }
+  .vr-chip:hover { color: #fff; border-color: rgba(255,255,255,0.45); }
+  .vr-chip:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .vr-chip[data-vr-active] {
+    background: #fff; color: var(--vr-accent-dark); border-color: #fff;
+    box-shadow: 0 14px 36px -14px rgba(0,0,0,0.45);
+    z-index: 3;
+  }
+  .vr-chip-ico {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    font-size: 1rem; line-height: 1;
+  }
+
+  /* ─── Bild-Stack ─── */
+  .vr-stack {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem 1rem;
+    overflow: hidden;
+    background: var(--vr-soft);
+    border-top: 1px solid var(--vr-line);
+  }
+  @media (min-width: 760px) {
+    .vr-stack { padding: 2rem 1.5rem; }
+  }
+  @media (min-width: 960px) {
+    .vr-stack {
+      padding: 3rem;
+      border-top: 0;
+      border-left: 1px solid var(--vr-line);
+    }
+  }
+
+  .vr-card {
+    position: absolute;
+    width: min(86%, 360px);
+    aspect-ratio: 4 / 5;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #000;
+    border: 5px solid var(--vr-soft);
+    box-shadow: 0 30px 60px -28px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translate3d(0,0,0) scale(0.72) rotate(0);
+    transition:
+      transform 750ms cubic-bezier(.22,.61,.36,1),
+      opacity 550ms ease,
+      filter 600ms ease;
+    pointer-events: none;
+    will-change: transform, opacity;
+    z-index: 0;
+  }
+  @media (min-width: 760px) {
+    .vr-card { width: min(82%, 380px); border-width: 6px; border-radius: 26px; }
+  }
+  @media (min-width: 960px) {
+    .vr-card { width: min(88%, 420px); border-width: 8px; border-radius: 32px; }
+  }
+
+  .vr-card[data-vr-status="prev"] {
+    opacity: 0.42;
+    transform: translate3d(-26%, 0, 0) scale(0.84) rotate(-4deg);
+    z-index: 1;
+    filter: grayscale(0.7) brightness(0.7);
+  }
+  .vr-card[data-vr-status="next"] {
+    opacity: 0.42;
+    transform: translate3d(26%, 0, 0) scale(0.84) rotate(4deg);
+    z-index: 1;
+    filter: grayscale(0.7) brightness(0.7);
+  }
+  .vr-card[data-vr-status="active"] {
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1) rotate(0);
+    z-index: 2;
+    pointer-events: auto;
+    filter: none;
+  }
+
+  .vr-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+    transition: filter 700ms ease;
+  }
+
+  .vr-overlay {
+    position: absolute; inset: auto 0 0 0;
+    padding: 3rem 1.1rem 1.15rem;
+    background: linear-gradient(0deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.78) 35%, rgba(0,0,0,0.4) 70%, transparent 100%);
+    color: #fff;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 450ms ease 200ms, transform 450ms ease 200ms;
+    pointer-events: none;
+  }
+  @media (min-width: 760px) {
+    .vr-overlay { padding: 6rem 1.7rem 1.7rem; }
+  }
+  .vr-card[data-vr-status="active"] .vr-overlay {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .vr-meta {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.32rem 0.85rem;
+    border-radius: 999px;
+    background: #fff; color: #111;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.64rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 6px 18px -6px rgba(0,0,0,0.4);
+  }
+  /* Mobile: Behandlungsname steht schon im Wheel-Chip — keine Doppelung in der Card. */
+  @media (max-width: 759px) {
+    .vr-meta { display: none; }
+  }
+  .vr-meta-sep { opacity: 0.4; }
+  .vr-meta-label { letter-spacing: 0.08em; }
+
+  .vr-desc {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.92rem; line-height: 1.4; font-weight: 400;
+    letter-spacing: -0.005em;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.35);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  @media (min-width: 760px) { .vr-desc { font-size: 1.12rem; line-height: 1.45; } }
+
+  .vr-foot {
+    margin-top: 0.85rem;
+    padding-top: 0.7rem;
+    display: flex; align-items: baseline; gap: 0.7rem;
+    border-top: 1px solid rgba(255,255,255,0.25);
+  }
+  .vr-preis {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem; font-weight: 600; color: #fff;
+  }
+  .vr-dauer {
+    font-size: 0.8rem; color: rgba(255,255,255,0.78);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .vr-pill {
+    position: absolute; top: 0.9rem; right: 0.9rem; z-index: 3;
+    padding: 0.3rem 0.78rem; border-radius: 999px;
+    background: var(--vr-accent); color: #fff;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: 0; transition: opacity 400ms ease 200ms;
+  }
+  .vr-card[data-vr-status="active"] .vr-pill { opacity: 1; }
+
+  .vr-live {
+    position: absolute; top: 1.1rem; left: 1.1rem; z-index: 3;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: rgba(255,255,255,0.85);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.6rem; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase;
+    opacity: 0; transition: opacity 400ms ease 200ms;
+  }
+  .vr-card[data-vr-status="active"] .vr-live { opacity: 1; }
+  .vr-live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.9);
+    animation: vr-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes vr-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(1.35); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vr-chip, .vr-card, .vr-overlay, .vr-pill, .vr-live { transition: none !important; }
+    .vr-live-dot { animation: none; }
+  }
+
+  /* Mobile: nur das Bild — Description/Footer/Pills/Live-Indikator weg
+     (User-Feedback: Carousel-Overlay-Text auf Mobile entfernen, Bild ruhig halten). */
+  @media (max-width: 759px) {
+    .vr-desc, .vr-foot, .vr-pill, .vr-live { display: none; }
+    .vr-overlay { background: linear-gradient(0deg, rgba(0,0,0,0.55) 0%, transparent 50%); padding: 0.6rem; }
+  }
+</style>
+
+<script>
+  type ChipEl = HTMLButtonElement;
+  type CardEl = HTMLElement;
+
+  function initReel(root: HTMLElement) {
+    const count = parseInt(root.dataset.vrCount || '0', 10);
+    const interval = parseInt(root.dataset.vrInterval || '4000', 10);
+    if (count < 2) return;
+
+    const chips = Array.from(root.querySelectorAll<ChipEl>('[data-vr-chip]'));
+    const cards = Array.from(root.querySelectorAll<CardEl>('[data-vr-card]'));
+
+    let step = 0;
+    let paused = false;
+    let timer: number | null = null;
+    let itemH = 64;
+
+    function readItemH() {
+      const v = getComputedStyle(root).getPropertyValue('--vr-item-h').trim();
+      const n = parseInt(v, 10);
+      if (!Number.isNaN(n)) itemH = n;
+    }
+
+    function wrapDiff(d: number, len: number) {
+      let x = d;
+      if (x > len / 2) x -= len;
+      if (x < -len / 2) x += len;
+      return x;
+    }
+
+    function render() {
+      const current = ((step % count) + count) % count;
+      const isWide = window.matchMedia('(min-width: 960px)').matches;
+      chips.forEach((chip, i) => {
+        const d = wrapDiff(i - current, count);
+        const x = isWide ? '0' : '-50%';
+        chip.style.transform = `translate(${x}, ${d * itemH}px)`;
+        chip.style.opacity = String(Math.max(0.12, 1 - Math.abs(d) * 0.24));
+        if (i === current) chip.setAttribute('data-vr-active', '');
+        else chip.removeAttribute('data-vr-active');
+      });
+      cards.forEach((card, i) => {
+        const d = wrapDiff(i - current, count);
+        let s: 'active' | 'prev' | 'next' | 'hidden' = 'hidden';
+        if (d === 0) s = 'active';
+        else if (d === -1 || (count === 2 && d === 1)) s = 'prev';
+        else if (d === 1) s = 'next';
+        card.setAttribute('data-vr-status', s);
+        card.setAttribute('aria-hidden', s === 'active' ? 'false' : 'true');
+      });
+    }
+
+    function tick() {
+      if (paused) return;
+      step += 1;
+      render();
+    }
+    function start() {
+      stop();
+      timer = window.setInterval(tick, interval);
+    }
+    function stop() {
+      if (timer !== null) window.clearInterval(timer);
+      timer = null;
+    }
+
+    chips.forEach((chip, i) => {
+      chip.addEventListener('click', () => {
+        const current = ((step % count) + count) % count;
+        const diff = (i - current + count) % count;
+        if (diff !== 0) step += diff;
+        render();
+      });
+    });
+
+    root.addEventListener('mouseenter', () => { paused = true; });
+    root.addEventListener('mouseleave', () => { paused = false; });
+    root.addEventListener('focusin', () => { paused = true; });
+    root.addEventListener('focusout', () => { paused = false; });
+
+    // Pausiert wenn nicht sichtbar (Tab im Hintergrund)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop(); else start();
+    });
+
+    let resizeRaf = 0;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => { readItemH(); render(); });
+    });
+
+    readItemH();
+    render();
+    start();
+  }
+
+  function boot() {
+    document.querySelectorAll<HTMLElement>('[data-vr-root]').forEach(initReel);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+</script>

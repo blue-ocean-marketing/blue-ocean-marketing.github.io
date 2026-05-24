@@ -1,0 +1,53 @@
+---
+// Öffentliche Showcase-Seite /physiotherapie — speist das Branchen-Template mit Demo-Daten.
+// Einzige Wahrheit für die Optik ist src/templates/physiotherapie/PhysiotherapieTemplate.astro;
+// hier nur die Beispiel-Config (Form: clients/_schema.json).
+// Inhaltliche Quelle = zielgruppen.md §4 (Schmerz konkret, Empathie, sensible Themen sichtbar,
+// Direktzugang/Selbstzahler-Hebel erwähnt, Schwerpunkte > Vollständigkeit).
+import PhysiotherapieTemplate from '../../templates/physiotherapie/PhysiotherapieTemplate.astro';
+
+const config = {
+  schema_version: 1,
+  slug: 'physiotherapie',
+  branche: 'physiotherapie',
+  marke: {
+    name: 'Praxis Bewegung Pforzheim',
+    slogan: 'Schmerzfrei in Bewegung.',
+    logo: null,
+    farben: { primary: '#2a9d8f', secondary: '#52b788', accent: '#1f6e64' },
+  },
+  kontakt: {
+    adresse: 'Bewegungsweg 7, 75173 Pforzheim',
+    stadt: 'Pforzheim',
+    telefon: '07231 / 45 67 80',
+    email: 'praxis@bewegung-pforzheim.de',
+    oeffnung: 'Mo–Fr 7:30–19:00 · Akutsprechstunde Mo & Do 8–9 Uhr',
+    instagram: '@praxis.bewegung.pforzheim',
+  },
+  // Schwerpunkte zuerst, Kasse-Leistungen danach — „Spezialisierung > Vollständigkeit"
+  // aus zielgruppen.md §4.3 Punkt 5.
+  leistungen: [
+    { titel: 'Manuelle Therapie', text: 'Gezielte Behandlung von Gelenk- und Wirbelsäulenproblemen durch erfahrene Therapeut:innen mit FA-Qualifikation.', preis: 'Kasse + Privat', dauer: '30 Min.', hot: true },
+    { titel: 'Sportphysio & Faszien', text: 'Für Sportler und Aktive: Leistungsdiagnostik, Faszientherapie, Bewegungsanalyse — ohne Rezept buchbar.', preis: 'ab 70 €/45 Min', dauer: 'Selbstzahler', hot: true },
+    { titel: 'Reha-Nachsorge', text: 'Nach OP, Unfall oder Krankenhausaufenthalt — wir setzen genau dort an, wo Klinik und Reha aufgehört haben.', preis: 'Kasse + Privat', dauer: '30–45 Min.' },
+    { titel: 'Beckenbodentherapie', text: 'Auch nach Geburt, Senkungsbeschwerden oder OP. Diskret, einfühlsam, in geschützter Atmosphäre.', preis: 'Kasse + Privat', dauer: '45 Min.' },
+    { titel: 'Krankengymnastik', text: 'Klassische KG bei Rücken-, Nacken-, Gelenkbeschwerden. Bewegt, gezeigt, dann selbst geübt.', preis: 'Kasse + Privat', dauer: '20–30 Min.' },
+    { titel: 'Lymphdrainage & Massage', text: 'Manuelle Lymphdrainage (z. B. nach Brust-OP) und klassische Massage zur Lockerung verspannter Muskulatur.', preis: 'Kasse + Privat', dauer: '30–45 Min.' },
+  ],
+  // Empathie + Schwerpunkte sichtbar machen (zielgruppen.md §4.3 Punkt 3: Team mit Spezialgebieten).
+  team: [
+    { name: 'Anna Hofer', rolle: 'Praxisinhaberin · Manuelle Therapie, CMD', initialen: 'AH', bild: null },
+    { name: 'Marius Klein', rolle: 'Sportphysio · Lauf- & Faszientraining', initialen: 'MK', bild: null },
+    { name: 'Carina Roth', rolle: 'Beckenboden- & Reha-Therapie', initialen: 'CR', bild: null },
+    { name: 'Jonas Becker', rolle: 'Krankengymnastik & Lymphdrainage', initialen: 'JB', bild: null },
+  ],
+  // Zitate spiegeln die drei Conversion-Hebel: Wartezeit, Empathie/Erklärung, sensibles Thema.
+  bewertungen: [
+    { name: 'Sabine W.', sterne: 5, text: 'Termin schon in der nächsten Woche, und nach der ersten Stunde wusste ich endlich, wo der Schmerz wirklich herkommt. Nicht nur Behandlung — Erklärung.' },
+    { name: 'Tobias H.', sterne: 5, text: 'Als Läufer war ich vorher in zwei Praxen — hier zum ersten Mal jemand, der genau hingeschaut hat, statt das Standardprogramm zu fahren. Nach drei Sitzungen wieder schmerzfrei.' },
+    { name: 'Familie K.', sterne: 5, text: 'Beckenbodentherapie nach der zweiten Geburt — Frau Roth hat es mir verständlich erklärt und nie das Gefühl gegeben, dass es ein „peinliches" Thema wäre. Sehr empfehlenswert.' },
+  ],
+  meta: { quelle: 'manuell', leadbook_lead_id: null, domain_ist: null, erstellt_am: null, notiz: 'Showcase-Demo' },
+};
+---
+<PhysiotherapieTemplate config={config} />

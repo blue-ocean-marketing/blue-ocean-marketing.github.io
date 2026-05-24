@@ -24,7 +24,7 @@ interface Objekt { icon?: string; titel: string; text?: string; preis?: string; 
 interface Config {
   slug: string;
   marke: { name: string; slogan?: string | null; logo?: string | null; farben: Farben };
-  kontakt: { adresse?: string | null; telefon: string; email: string; oeffnung?: string | null; instagram?: string | null };
+  kontakt: { adresse?: string | null; stadt?: string | null; telefon: string; email: string; oeffnung?: string | null; instagram?: string | null };
   hero?: { ueberschrift?: string; text?: string; cta_text?: string; cta_ziel?: string } | null;
   leistungen?: Objekt[];
   team?: { name: string; rolle: string; bild?: string | null; initialen?: string | null }[];
@@ -36,6 +36,7 @@ const { config } = Astro.props as { config: Config };
 const { slug } = config;
 const { name, slogan, logo, farben } = config.marke;
 const { adresse, telefon, email, oeffnung, instagram } = config.kontakt;
+const stadtRaw = config.kontakt.stadt;
 const objekte = (config.leistungen ?? []).slice(0, 6);
 const team = config.team ?? [];
 const bewertungen = config.bewertungen ?? [];
@@ -51,14 +52,18 @@ const logoImg = clientImage(slug, logo);
 const useDefaultLogo = !logoImg && /beyond\s*estates/i.test(name);
 const nameWords = name.split(' ');
 const ort = adresse && adresse.includes(',') ? adresse.split(',').slice(-1)[0].trim() : '';
+const stadt = stadtRaw ?? ort;
 
-const titel = config.hero?.ueberschrift ?? slogan ?? 'Für Immobilien, die alles sind. Außer gewöhnlich.';
-const heroText =
-  config.hero?.text ??
-  `Diskrete Vermittlung außergewöhnlicher Wohnobjekte${ort ? ` in ${ort}` : ''} — kuratiert, persönlich, ohne Kompromiss.`;
+// Hero-H1-Block (universell: branchen-sub · name · stadt-tag) + 1-zeiliger Lead.
+const heroBrancheSub = 'Privatmaklerei';
+const heroBrancheTag = 'Immobilien';
+const heroLead = config.hero?.text ?? slogan ?? 'Für Immobilien, die alles sind. Außer gewöhnlich.';
 const ctaText = config.hero?.cta_text ?? 'Beratungstermin';
 const ctaZiel = config.hero?.cta_ziel ?? '#kontakt';
 const telHref = `tel:${telefon.replace(/\s/g, '')}`;
+// WhatsApp: rohe Ziffern, deutsche Vorwahl (0 → 49) wenn führend
+const waDigits = telefon.replace(/[^\d]/g, '').replace(/^0/, '49');
+const waHref = `https://wa.me/${waDigits}?text=${encodeURIComponent(`Hallo ${name}, ich interessiere mich für ein Beratungsgespräch.`)}`;
 
 // Default-Hero-Fotos (web-optimiert, astro:assets) — Fallback wenn kein galerie[i]-Bild.
 const heroGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/immobilien/hero-*.webp', { eager: true });
@@ -97,6 +102,48 @@ const ablauf = [
   { nr: '02', titel: 'Inszenierung', text: 'Architekturfotografie, Exposé und gezielte Ansprache eines vorgemerkten Käuferkreises.' },
   { nr: '03', titel: 'Abschluss', text: 'Verhandlung, Bonitätsprüfung und Begleitung bis zum Notartermin — alles aus einer Hand.' },
 ];
+
+// [Vertrauen] Discretion Bar — agentur-gepflegt. Conversion-Hebel #1 laut
+// zielgruppen.md: im Luxussegment kauft man Diskretion + Vertrauen, nicht
+// Reichweite. Direkt nach dem Hero, zurückhaltend (Status über Zurückhaltung).
+// Siehe conversion-playbook.md.
+const diskretionKicker = 'Diskretion zuerst';
+const diskretionTitel = 'Ihr Verkauf bleibt unter uns.';
+const diskretionText = 'Kein öffentliches Inserat, keine Schaufenster-Vermarktung. Wir sprechen ausschließlich einen vorgemerkten, geprüften Käuferkreis an — vertraulich und auf Wunsch vollständig off-market.';
+const diskretion = [
+  { t: 'Off-Market & diskret', d: 'Vermarktung ohne Portal und ohne öffentliche Preisnennung.' },
+  { t: 'Vertraulich & unverbindlich', d: 'Erstgespräch und Wertermittlung ohne jede Verpflichtung.' },
+  { t: 'Über Vertrauen, nicht Reichweite', d: 'Ein persönlich betreuter Prozess — von der Bewertung bis zum Notartermin.' },
+];
+
+// [Scorecard] Self-Check — interaktiver Lead-Magnet (Priestley/ScoreApp).
+// Konzept: „Ist jetzt der richtige Moment zu verkaufen?" — Readiness-Check
+// + Cinderella-Qualifizierung (Region, Objektklasse, Diskretionsbedarf,
+// Zeitfenster). Zurückhaltend formuliert, Lead-Form streng vertraulich.
+// Siehe scoreapp.md.
+const sc = {
+  kicker: 'Vertraulicher Selbst-Check',
+  titel: 'Ist jetzt der richtige Moment zu verkaufen?',
+  intro: 'Sechs kurze Fragen. Sie erhalten sofort eine Einschätzung Ihrer Ausgangslage — diskret, unverbindlich und ohne Kontaktaufnahme.',
+  meta: ['6 Fragen', 'ca. 2 Minuten', 'Sofort-Ergebnis'],
+  startLabel: 'Check starten',
+  note: 'Basierend auf der Erfahrung aus über 180 vermittelten Objekten. Streng vertraulich.',
+  fragen: [
+    { q: 'Besitzen Sie eine Immobilie im Großraum München?', a: [ { t: 'Ja', p: 2 }, { t: 'In Planung', p: 1 }, { t: 'Nein', p: 0 } ] },
+    { q: 'Haben Sie in den letzten 12 Monaten über einen Verkauf nachgedacht?', a: [ { t: 'Ja, konkret', p: 3 }, { t: 'Gelegentlich', p: 2 }, { t: 'Eher nicht', p: 0 } ] },
+    { q: 'Kennen Sie den aktuellen Marktwert Ihrer Immobilie?', a: [ { t: 'Genau', p: 2 }, { t: 'Ungefähr', p: 1 }, { t: 'Gar nicht', p: 0 } ] },
+    { q: 'Handelt es sich um ein höherwertiges oder besonderes Objekt?', a: [ { t: 'Ja, klar', p: 3 }, { t: 'Eher gehoben', p: 2 }, { t: 'Standard', p: 1 } ] },
+    { q: 'Wie wichtig ist Ihnen Diskretion beim Verkauf?', a: [ { t: 'Sehr wichtig', p: 3 }, { t: 'Wichtig', p: 2 }, { t: 'Weniger', p: 1 } ] },
+    { q: 'In welchem Zeitfenster möchten Sie idealerweise verkaufen?', a: [ { t: 'Innerhalb 6 Monaten', p: 3 }, { t: 'Dieses Jahr', p: 2 }, { t: 'Noch offen', p: 1 } ] },
+  ],
+  leadTitel: 'An wen dürfen wir die Einschätzung richten?',
+  leadSub: 'Ihr Ergebnis erscheint sofort. Ihre Angaben behandeln wir streng vertraulich — Sie hören nur von uns, wenn Sie es wünschen.',
+  tiers: [
+    { min: 0,  label: 'Noch in der Sondierung', msg: 'Ein Verkauf ist für Sie eher Zukunftsmusik — ein guter Zeitpunkt, um Wert und Optionen unverbindlich zu kennen, bevor es konkret wird.' },
+    { min: 50, label: 'Verkauf rückt näher', msg: 'Vieles spricht dafür, jetzt die Weichen zu stellen. Eine vertrauliche Wertermittlung gibt Ihnen Klarheit, ohne dass Sie sich festlegen müssen.' },
+    { min: 80, label: 'Bereit für den stillen Verkauf', msg: 'Ihre Ausgangslage ist ideal für eine diskrete, kuratierte Vermarktung. Genau dafür sind wir da — vertraulich und ohne öffentliches Inserat.' },
+  ],
+};
 ---
 <!doctype html>
 <html lang="de" style={cssVars}>
@@ -124,7 +171,8 @@ const ablauf = [
       --ease: 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, sans-serif; color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; }
+    html { overflow-x: clip; }
+    body { font-family: 'Inter', system-ui, sans-serif; color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; overflow-x: clip; overscroll-behavior-x: none; }
     .serif { font-family: var(--font-display); font-weight: 500; }
     img { max-width: 100%; display: block; }
 
@@ -132,16 +180,21 @@ const ablauf = [
     .demo-banner {
       background: #0d0d14; color: #94a3b8;
       text-align: center; padding: 0.6rem 1rem;
-      font-size: 0.75rem; position: sticky; top: 0; z-index: 100;
+      font-size: 0.75rem; line-height: 1.45; position: sticky; top: 0; z-index: 100;
       border-bottom: 1px solid var(--c-p-40);
     }
     .demo-banner a { color: var(--c-primary); text-decoration: none; font-weight: 600; }
-    .demo-banner .cta-btn { background: var(--c-primary); color: #15110d; padding: 0.2rem 0.75rem; border-radius: 4px; margin-left: 0.75rem; }
+    .demo-banner .cta-btn { background: var(--c-primary); color: #15110d; padding: 0.2rem 0.75rem; border-radius: 4px; margin-left: 0.75rem; white-space: nowrap; }
+    @media (max-width: 600px) {
+      .demo-banner { padding: 0.5rem 0.75rem 0.55rem; font-size: 0.7rem; }
+      .demo-banner .cta-btn { display: inline-block; margin: 0.3rem 0 0; padding: 0.3rem 0.75rem; font-size: 0.7rem; }
+      .demo-banner .cta-break { display: block; height: 0; }
+    }
 
     /* NAV — über dem Hero schwebend, wird beim Scrollen fest */
     nav {
       position: fixed; top: 37px; left: 0; right: 0; z-index: 50;
-      padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
+      padding: 1.25rem clamp(1rem, 4vw, 3rem);
       display: flex; align-items: center; justify-content: space-between;
       background: transparent; border-bottom: 1px solid transparent;
       transition: background var(--ease), border-color var(--ease);
@@ -290,12 +343,119 @@ const ablauf = [
       .hero-project { bottom: 155px; }
     }
 
-    /* TRUST BAR */
-    .trust { border-bottom: 1px solid var(--line); padding: clamp(2rem, 4vw, 2.75rem) clamp(1.25rem, 4vw, 3rem); }
-    .trust-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; }
-    .trust-cell { text-align: center; }
-    .trust-val { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 600; color: var(--ink); }
-    .trust-lbl { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-top: 0.4rem; }
+    /* [Vertrauen] Discretion Bar — zurückhaltend (Status über Zurückhaltung) */
+    .assure { background: var(--paper); border-bottom: 1px solid var(--line); padding: clamp(3rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem); }
+    .assure-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+    .assure-lead h2 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(1.8rem, 3.5vw, 2.6rem); color: var(--ink); line-height: 1.15; margin: 0.5rem 0 1rem; }
+    .assure-lead p { color: var(--muted); font-size: 0.95rem; line-height: 1.75; max-width: 42ch; }
+    .assure-lead .kontakt-cta { margin-top: 2rem; }
+    .assure-points { list-style: none; display: grid; gap: 1rem; }
+    .assure-points li { display: flex; gap: 0.85rem; align-items: flex-start; border-top: 1px solid var(--line); padding-top: 1rem; }
+    .assure-points svg { color: var(--c-primary); flex: none; margin-top: 0.15rem; }
+    .assure-points b { display: block; font-family: var(--font-display); font-style: italic; font-size: 1.15rem; color: var(--ink); margin-bottom: 0.2rem; }
+    .assure-points .ap-txt { font-size: 0.86rem; color: var(--muted); line-height: 1.6; }
+    @media (max-width: 820px) { .assure-inner { grid-template-columns: 1fr; gap: 1.75rem; } .assure-lead p { max-width: none; } }
+
+    /* [Scorecard] Self-Check — restrained luxury variant */
+    .sc { background: color-mix(in srgb, var(--c-primary) 6%, var(--paper)); border-top: 1px solid var(--line); }
+    .sc-card { max-width: 620px; margin: 0 auto; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: clamp(1.75rem, 4vw, 3rem); position: relative; overflow: hidden; }
+    .sc-progress { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--line); }
+    .sc-progress > i { display: block; height: 100%; width: 0; background: var(--c-primary); transition: width 0.4s ease; }
+    .sc-step { animation: scIn 0.35s ease; }
+    @keyframes scIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .sc-step h2 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.4rem); color: var(--ink); line-height: 1.15; margin: 0.5rem 0 0.85rem; }
+    .sc-step h3 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(1.25rem, 2.6vw, 1.65rem); color: var(--ink); line-height: 1.25; margin: 0.5rem 0 1.3rem; }
+    .sc-intro { color: var(--muted); line-height: 1.7; font-size: 0.95rem; }
+    .sc-meta { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 0.7rem; margin: 1.2rem 0 1.8rem; padding: 0; }
+    .sc-meta li { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-primary); border: 1px solid var(--line); padding: 0.45rem 0.95rem; }
+    .sc-start, .sc-reveal, .sc-cta { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; background: var(--c-primary); color: #15110d; border: none; border-radius: 100px; padding: 1rem 2rem; font: inherit; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; min-height: 48px; cursor: pointer; transition: background var(--ease), transform var(--ease); }
+    .sc-start:hover, .sc-reveal:hover, .sc-cta:hover { background: var(--c-primary-light); transform: translateY(-1px); }
+    .sc-note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.55; }
+    .sc-count { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-primary); }
+    .sc-qhead { margin-bottom: 0.5rem; }
+    .sc-opts { display: grid; gap: 0.65rem; }
+    .sc-opt { text-align: left; font: inherit; font-size: 1rem; font-weight: 500; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 1rem 1.15rem; min-height: 52px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .sc-opt:hover { border-color: var(--c-primary); background: color-mix(in srgb, var(--c-primary) 5%, transparent); }
+    .sc-opt.is-sel { border-color: var(--c-primary); background: color-mix(in srgb, var(--c-primary) 8%, transparent); }
+    .sc-back, .sc-restart { display: inline-block; margin-top: 1.3rem; background: none; border: none; color: var(--muted); font: inherit; font-size: 0.82rem; cursor: pointer; text-decoration: underline; padding: 0.5rem 0.25rem; min-height: 44px; }
+    .sc-field { margin-bottom: 1rem; }
+    .sc-field label { display: block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .sc-in { width: 100%; font: inherit; font-size: 1rem; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 0.85rem 1rem; min-height: 48px; }
+    .sc-in:focus { outline: none; border-color: var(--c-primary); }
+    .sc-err { color: #b15a3b; font-size: 0.85rem; margin: 0.2rem 0 1rem; }
+    .sc-score { display: flex; align-items: baseline; gap: 0.5rem; margin: 0.6rem 0 0.6rem; }
+    .sc-score b { font-family: var(--font-display); font-weight: 600; font-style: italic; font-size: clamp(2.8rem, 9vw, 4rem); color: var(--c-primary); line-height: 1; }
+    .sc-score span { color: var(--muted); font-size: 0.95rem; }
+    .sc-tierbadge { display: inline-block; font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 1.05rem; color: var(--ink); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.5rem 0; margin: 0.4rem 0 1.1rem; }
+    .sc-tiermsg { color: var(--muted); line-height: 1.7; margin-bottom: 1.8rem; font-size: 0.95rem; }
+    @media (max-width: 520px) { .sc-card { padding: 1.5rem 1.25rem; } }
+
+    /* [Marquee] Estate Numbers — endlos durchlaufende Kennzahlen, hell auf Paper.
+       Track läuft von 0 → -50% (Reihe 2× dupliziert ⇒ nahtlos). */
+    .marquee {
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: clamp(1.4rem, 2.8vw, 2.2rem) 0;
+      overflow: hidden;
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee-scroll 42s linear infinite;
+      will-change: transform;
+    }
+    .marquee:hover .marquee-track { animation-play-state: paused; }
+    .marquee-row {
+      display: flex;
+      align-items: baseline;
+      flex-shrink: 0;
+      gap: clamp(2rem, 4.5vw, 3.75rem);
+      padding-right: clamp(2rem, 4.5vw, 3.75rem);
+    }
+    .marquee-cell {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.85rem;
+      white-space: nowrap;
+    }
+    .m-val {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 600;
+      font-size: clamp(1.4rem, 2.6vw, 2rem);
+      color: var(--ink);
+      line-height: 1;
+      letter-spacing: -0.005em;
+    }
+    .m-lbl {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .marquee-sep {
+      color: var(--c-primary);
+      font-size: 0.7rem;
+      line-height: 1;
+      opacity: 0.85;
+      flex-shrink: 0;
+    }
+    @keyframes marquee-scroll {
+      from { transform: translate3d(0, 0, 0); }
+      to   { transform: translate3d(-50%, 0, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .marquee-track { animation: none; width: 100%; }
+      .marquee-row[aria-hidden="true"] { display: none; }
+      .marquee-row {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 0 clamp(1.25rem, 4vw, 3rem);
+        row-gap: 0.75rem;
+      }
+    }
 
     /* SECTIONS */
     section { padding: clamp(3.5rem, 7vw, 6rem) clamp(1.25rem, 4vw, 3rem); }
@@ -385,18 +545,104 @@ const ablauf = [
     }
     .kontakt-cta:hover { background: var(--c-primary-light); }
 
+    /* ─────────── [Hero] Estate Reel — Vollbild-Video-Cinema ───────────
+       Zweite Hero direkt nach der Foto-Bühne. 4 Clips (Desktop) bzw. 1 Hochformat
+       (Mobil), per JS gewählt — kein doppelter Download. Reduced-Motion /
+       Save-Data → Poster bleibt stehen. */
+    .cine { position: relative; min-height: 92vh; min-height: 92svh; display: flex; align-items: flex-end; overflow: hidden; background: var(--ink); isolation: isolate; padding: 0; }
+    .cine-bg { position: absolute; inset: 0; z-index: 0; }
+    .cine-poster, .cine-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cine-poster { z-index: 0; }
+    .cine-vid { z-index: 1; opacity: 0; transition: opacity 1.1s ease; will-change: opacity; }
+    .cine-vid.on { opacity: 1; }
+    .cine-bg::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse 58% 58% at 82% 14%, var(--c-p-22) 0%, transparent 60%); }
+    .cine-bg::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(to top, rgba(8,8,10,0.88) 0%, rgba(8,8,10,0.30) 46%, rgba(8,8,10,0.16) 100%), linear-gradient(to right, rgba(8,8,10,0.58) 0%, rgba(8,8,10,0.10) 60%, transparent 100%); }
+    .cine-inner { position: relative; z-index: 3; width: 100%; max-width: 1240px; margin: 0 auto; padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem,4vw,3rem) clamp(3.5rem, 7vw, 5.5rem); }
+    .cine-stage { max-width: 44rem; }
+    .cine .eyebrow { display: inline-block; margin-bottom: 1rem; color: #fff; background: color-mix(in srgb, var(--c-primary) 60%, transparent); padding: 0.4rem 0.95rem; border-radius: 100px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); letter-spacing: 0.18em; }
+    /* [Hero] Brand H1 — universeller 3-zeiliger Block: sub · name · tag */
+    .cine h1 { margin: 0.4rem 0 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; max-width: 18ch; }
+    .cine h1 .h1-sub {
+      font-family: var(--font-display); font-style: italic;
+      font-size: clamp(1rem, 1.5vw, 1.25rem); font-weight: 400;
+      letter-spacing: 0.01em; color: rgba(255,255,255,0.8); line-height: 1.2;
+    }
+    .cine h1 .h1-name {
+      font-family: var(--font-display); color: #fff;
+      font-size: clamp(2.4rem, 6.4vw, 4.6rem);
+      font-weight: 500; font-style: italic; letter-spacing: -0.015em; line-height: 1.02;
+    }
+    .cine h1 .h1-tag {
+      align-self: flex-start; font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); margin-top: 0.5rem;
+    }
+    .cine-lead { color: rgba(255,255,255,0.82); line-height: 1.7; font-size: clamp(1rem, 1.5vw, 1.1rem); max-width: 36rem; }
+    /* [Hero] Brand Mark — Logo linksbündig über dem Eyebrow (auf dunklem Video-Reel). */
+    .cine-brand { display: inline-flex; align-items: center; margin-bottom: clamp(0.75rem, 1.6vw, 1.25rem); }
+    .cine-brand img { height: clamp(44px, 5.5vw, 68px); width: auto; max-width: min(240px, 62vw); filter: drop-shadow(0 2px 18px rgba(0,0,0,0.5)); }
+    @media (max-width: 480px) { .cine-brand img { height: 42px; max-width: 180px; } }
+    .cine-actions { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 2.1rem; }
+    .cine-cta { display: inline-flex; align-items: center; gap: 0.55rem; background: var(--c-primary); color: #15110d; padding: 1rem 2rem; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; border-radius: 100px; min-height: 44px; transition: background var(--ease), transform var(--ease); }
+    .cine-cta:hover { background: var(--c-primary-light); transform: translateY(-1px); }
+    .cine-cta-ghost { display: inline-flex; align-items: center; gap: 0.55rem; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.34); padding: 1rem 2rem; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; border-radius: 100px; min-height: 44px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: background var(--ease), border-color var(--ease); }
+    .cine-cta-ghost:hover { background: rgba(255,255,255,0.18); border-color: #fff; }
+    .cine-scroll { position: absolute; left: 50%; bottom: 1.3rem; transform: translateX(-50%); z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; text-decoration: none; color: rgba(255,255,255,0.65); font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; }
+    .cine-scroll i { display: block; width: 1px; height: 34px; background: linear-gradient(to bottom, rgba(255,255,255,0.45), transparent); animation: pulse 2.4s ease-in-out infinite; }
+    @media (max-width: 768px) {
+      .cine { min-height: 88vh; min-height: 88svh; }
+      .cine h1 { max-width: 16ch; }
+      .cine-cta, .cine-cta-ghost { padding: 0.95rem 1.7rem; font-size: 0.74rem; }
+    }
+
     /* FOOTER */
     footer { background: #141214; color: rgba(247,244,238,0.4); padding: 3rem clamp(1.25rem, 4vw, 3rem) 2.5rem; text-align: center; font-size: 0.8rem; }
     footer .f-name { font-family: var(--font-display); font-size: 1.4rem; font-style: italic; color: rgba(247,244,238,0.7); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.75rem; }
     footer a { color: var(--c-primary); text-decoration: none; }
     footer .f-legal { margin-top: 0.75rem; font-size: 0.72rem; opacity: 0.6; }
+
+    /* ─────────── [Sticky] Mobile CTA Bar — Anrufen + WhatsApp ─────────── */
+    .sticky-cta {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      z-index: 60; display: none; gap: 0.55rem;
+      padding: 0.55rem 0.6rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 24px rgba(20,18,20,0.12);
+      transform: translateY(110%);
+      transition: transform 0.32s cubic-bezier(.22,.61,.36,1);
+    }
+    .sticky-cta[data-visible="true"] { transform: translateY(0); }
+    .sticky-cta-btn {
+      flex: 1; min-height: 52px;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.55rem; border-radius: 4px;
+      font-family: var(--font-body, 'Inter', sans-serif);
+      font-size: 0.95rem; font-weight: 600; letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none; color: #fff;
+      transition: filter 0.18s ease, transform 0.12s ease;
+    }
+    .sticky-cta-btn:active { transform: scale(0.97); }
+    .sticky-cta-btn svg { width: 1.15rem; height: 1.15rem; }
+    .sticky-cta-call { background: var(--c-primary); }
+    .sticky-cta-call:hover { background: var(--c-primary-dark); }
+    .sticky-cta-wa { background: #25D366; }
+    .sticky-cta-wa:hover { filter: brightness(0.95); }
+    @media (max-width: 767px) {
+      .sticky-cta { display: flex; }
+      body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sticky-cta { transition: none; }
+    }
   </style>
 </head>
 <body>
 
 <!-- DEMO BANNER -->
 <div class="demo-banner">
-  🎨 Musterseite von <a href="/">Blue Ocean Marketing</a> — mit Ihrem Branding in 48h personalisiert.
+  🎨 Musterseite von <a href="/">Blue Ocean Marketing</a> — Branding in 48h.<span class="cta-break"></span>
   <a href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener" class="cta-btn">Demo anfragen →</a>
 </div>
 
@@ -423,6 +669,65 @@ const ablauf = [
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
   </a>
 </nav>
+
+<!-- [Hero] Estate Reel — Cinematic-Hero im Bewegtbild (zuerst) -->
+<section class="cine">
+  <div class="cine-bg">
+    <picture>
+      <source media="(max-width: 767px)" srcset="/videos/immobilien/poster-mobile.webp" />
+      <img class="cine-poster" src="/videos/immobilien/poster-desktop.webp" alt="" loading="lazy" />
+    </picture>
+    <!-- Reel per Gerät via JS verdrahtet (data-src → src): Mobil lädt nie die
+         Desktop-Clips und umgekehrt; spart Daten. -->
+    <video class="cine-vid" data-reel="d" data-src="/videos/immobilien/reel-1.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="d" data-src="/videos/immobilien/reel-2.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="d" data-src="/videos/immobilien/reel-3.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="d" data-src="/videos/immobilien/reel-4.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="m" data-src="/videos/immobilien/mobile.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+  </div>
+
+  <div class="cine-inner">
+    <div class="cine-stage">
+      <h1>
+        <span class="h1-sub">{heroBrancheSub}</span>
+        <span class="h1-name">{name}</span>
+        <span class="h1-tag">— {heroBrancheTag.toUpperCase()}{stadt ? ` · ${stadt.toUpperCase()}` : ''} —</span>
+      </h1>
+      <p class="cine-lead">{heroLead}</p>
+      <div class="cine-actions">
+        <a href={ctaZiel} class="cine-cta">{ctaText}</a>
+        <a href="#objekte" class="cine-cta-ghost">Objekte ansehen</a>
+      </div>
+    </div>
+  </div>
+
+  <a href="#hero" class="cine-scroll" aria-label="Weiter">
+    <span>Scroll</span><i></i>
+  </a>
+</section>
+
+<!-- [Marquee] Estate Numbers — endlos durchlaufender Kennzahlen-Streifen,
+     helle Brücke zwischen Video-Hero und Foto-Hero. Reihe ist 2× dupliziert für
+     nahtlosen Loop (translateX 0 → -50 %). Reduced-Motion: Animation aus,
+     Inhalt wickelt sich um. -->
+<section class="marquee" aria-label="Kennzahlen">
+  <div class="marquee-track">
+    {[0, 1].map((row) => (
+      <div class="marquee-row" aria-hidden={row === 1 ? 'true' : undefined}>
+        {trust.map((t, i) => (
+          <>
+            {i > 0 && <span class="marquee-sep" aria-hidden="true">✦</span>}
+            <span class="marquee-cell">
+              <span class="m-val">{t.val}</span>
+              <span class="m-lbl">{t.label}</span>
+            </span>
+          </>
+        ))}
+        <span class="marquee-sep" aria-hidden="true">✦</span>
+      </div>
+    ))}
+  </div>
+</section>
 
 <!-- HERO — [Hero] Estate Cinematic -->
 <section class="hero" id="hero">
@@ -452,7 +757,7 @@ const ablauf = [
             </span>
           )}
         </div>
-        <h1 class="proj-title">{n.lead}{n.em && <em> {n.em}</em>}</h1>
+        <h2 class="proj-title">{n.lead}{n.em && <em> {n.em}</em>}</h2>
         {o.text && <p class="proj-desc">{o.text}</p>}
         <a href="#objekte" class="proj-cta">
           Zum Objekt
@@ -488,15 +793,23 @@ const ablauf = [
 
 </section>
 
-<!-- TRUST BAR -->
-<section class="trust" style="padding-top: clamp(2rem,4vw,2.75rem); padding-bottom: clamp(2rem,4vw,2.75rem);">
-  <div class="trust-inner">
-    {trust.map(t => (
-      <div class="trust-cell">
-        <div class="trust-val">{t.val}</div>
-        <div class="trust-lbl">{t.label}</div>
-      </div>
-    ))}
+<!-- [Vertrauen] Discretion Bar — Diskretion als Versprechen, nicht als Fußnote -->
+<section id="vertrauen" class="assure">
+  <div class="assure-inner">
+    <div class="assure-lead">
+      <span class="eyebrow">{diskretionKicker}</span>
+      <h2>{diskretionTitel}</h2>
+      <p>{diskretionText}</p>
+      <a href={ctaZiel} class="kontakt-cta">{ctaText}</a>
+    </div>
+    <ul class="assure-points">
+      {diskretion.map((d) => (
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span class="ap-txt"><b>{d.t}</b>{d.d}</span>
+        </li>
+      ))}
+    </ul>
   </div>
 </section>
 
@@ -634,6 +947,61 @@ const ablauf = [
   </section>
 )}
 
+<!-- [Scorecard] Self-Check — restrained luxury variant (Priestley/ScoreApp) -->
+<section id="check" class="sc">
+  <div class="sc-card" data-sc>
+    <div class="sc-progress" aria-hidden="true"><i></i></div>
+
+    <div class="sc-step" data-step="intro">
+      <span class="eyebrow">{sc.kicker}</span>
+      <h2>{sc.titel}</h2>
+      <p class="sc-intro">{sc.intro}</p>
+      <ul class="sc-meta">{sc.meta.map((m) => <li>{m}</li>)}</ul>
+      <button type="button" class="sc-start">{sc.startLabel}</button>
+      <p class="sc-note">{sc.note}</p>
+    </div>
+
+    {sc.fragen.map((f, i) => (
+      <div class="sc-step sc-q" data-step={`q${i}`} hidden>
+        <div class="sc-qhead"><span class="sc-count">Frage {i + 1} / {sc.fragen.length}</span></div>
+        <h3>{f.q}</h3>
+        <div class="sc-opts">
+          {f.a.map((o) => (
+            <button type="button" class="sc-opt" data-points={o.p}>{o.t}</button>
+          ))}
+        </div>
+        <button type="button" class="sc-back" data-back>← Zurück</button>
+      </div>
+    ))}
+
+    <div class="sc-step sc-form" data-step="lead" hidden>
+      <span class="eyebrow">Fast geschafft</span>
+      <h3>{sc.leadTitel}</h3>
+      <p class="sc-intro">{sc.leadSub}</p>
+      <div class="sc-field"><label for="sc-name">Name</label><input id="sc-name" class="sc-in" type="text" data-req="name" autocomplete="name" /></div>
+      <div class="sc-field"><label for="sc-mail">E-Mail</label><input id="sc-mail" class="sc-in" type="email" data-req="email" autocomplete="email" /></div>
+      <div class="sc-field"><label for="sc-tel">Telefon (optional)</label><input id="sc-tel" class="sc-in" type="tel" autocomplete="tel" /></div>
+      <p class="sc-err" data-err hidden>Bitte Namen und eine gültige E-Mail-Adresse angeben.</p>
+      <button type="button" class="sc-reveal">Einschätzung ansehen</button>
+      <p class="sc-note">Demo-Formular — Eingaben werden nicht übertragen oder gespeichert.</p>
+    </div>
+
+    <div class="sc-step sc-result" data-step="result" hidden>
+      <span class="eyebrow">Ihre Einschätzung</span>
+      <div class="sc-score"><b data-score>0</b><span>von 100 Punkten</span></div>
+      <div class="sc-tierbadge" data-tierlabel>—</div>
+      <p class="sc-tiermsg" data-tiermsg></p>
+      <a href={ctaZiel} class="sc-cta">{ctaText}</a>
+      <button type="button" class="sc-restart" data-restart>Check neu starten</button>
+      <div class="sc-tiers" hidden>
+        {sc.tiers.map((t) => (
+          <div class="sc-tier" data-min={t.min} data-label={t.label}>{t.msg}</div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- KONTAKT -->
 <section id="kontakt" class="kontakt-bg">
   <div class="section-inner">
@@ -641,7 +1009,7 @@ const ablauf = [
       <div>
         <span class="eyebrow">Kontakt</span>
         <h2>Sprechen wir über Ihre Immobilie</h2>
-        <p class="lead">Ob Verkauf, Bewertung oder die Suche nach dem passenden Objekt — wir beraten Sie diskret und unverbindlich.</p>
+        <p class="lead">Ob Verkauf, Bewertung oder die Suche nach dem passenden Objekt — wir beraten Sie absolut vertraulich und unverbindlich, auf Wunsch vollständig off-market.</p>
         <a href={telHref} class="kontakt-cta">📞 {telefon}</a>
       </div>
       <div>
@@ -771,6 +1139,174 @@ const ablauf = [
         sig.play().catch(() => {});
       }
     }
+  })();
+</script>
+
+<!-- [Hero] Estate Reel — Geräte-Reel + Crossfade. Reduced-Motion / Save-Data → Poster bleibt stehen. -->
+<script>
+  (function () {
+    var cine = document.querySelector('.cine');
+    if (!cine) return;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var conn = navigator.connection || {};
+    if (reduce || conn.saveData === true) return;
+
+    var sel = window.matchMedia('(max-width: 767px)').matches ? 'm' : 'd';
+    var vids = [];
+    [].slice.call(cine.querySelectorAll('.cine-vid')).forEach(function (v) {
+      if (v.getAttribute('data-reel') === sel) vids.push(v);
+      else if (v.parentNode) v.parentNode.removeChild(v);
+    });
+    if (!vids.length) return;
+    vids.forEach(function (v) { v.src = v.getAttribute('data-src'); v.load(); });
+
+    function play(v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+
+    if (vids.length === 1) {
+      vids[0].loop = true;
+      vids[0].classList.add('on');
+      play(vids[0]);
+      return;
+    }
+
+    var i = 0, switching = false;
+    function show(n) { vids[n].classList.add('on'); vids[n].currentTime = 0; play(vids[n]); }
+    function advance() {
+      if (switching) return;
+      switching = true;
+      var prev = vids[i];
+      i = (i + 1) % vids.length;
+      show(i);
+      setTimeout(function () {
+        prev.classList.remove('on'); prev.pause();
+        switching = false;
+      }, 1200);
+    }
+    vids.forEach(function (v) {
+      v.addEventListener('timeupdate', function () {
+        if (v === vids[i] && v.duration && v.currentTime >= v.duration - 1.0) advance();
+      });
+      v.addEventListener('ended', function () { if (v === vids[i]) advance(); });
+    });
+    show(0);
+  })();
+</script>
+
+<!-- [Scorecard] Controller — DOM-getrieben, dependency-frei, idempotent -->
+<script>
+  (function () {
+    var card = document.querySelector('[data-sc]');
+    if (!card) return;
+    var steps = [].slice.call(card.querySelectorAll('.sc-step'));
+    var order = steps.map(function (s) { return s.getAttribute('data-step'); });
+    var qEls = [].slice.call(card.querySelectorAll('.sc-q'));
+    var bar = card.querySelector('.sc-progress > i');
+    var picks = {};
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function go(name) {
+      steps.forEach(function (s) { s.hidden = (s.getAttribute('data-step') !== name); });
+      var i = order.indexOf(name);
+      if (bar) bar.style.width = Math.round((i / (order.length - 1)) * 100) + '%';
+      try { card.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }
+      catch (e) { card.scrollIntoView(); }
+    }
+    function step(from, dir) {
+      var i = order.indexOf(from);
+      go(order[Math.max(0, Math.min(order.length - 1, i + dir))]);
+    }
+
+    card.querySelectorAll('.sc-start').forEach(function (b) {
+      b.addEventListener('click', function () { go(order[1]); });
+    });
+    qEls.forEach(function (q) {
+      var key = q.getAttribute('data-step');
+      q.querySelectorAll('.sc-opt').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          q.querySelectorAll('.sc-opt').forEach(function (o) { o.classList.remove('is-sel'); });
+          opt.classList.add('is-sel');
+          picks[key] = parseFloat(opt.getAttribute('data-points')) || 0;
+          step(key, 1);
+        });
+      });
+    });
+    card.querySelectorAll('[data-back]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        step(b.closest('.sc-step').getAttribute('data-step'), -1);
+      });
+    });
+
+    function valid() {
+      var n = card.querySelector('[data-req="name"]');
+      var m = card.querySelector('[data-req="email"]');
+      return n && n.value.trim().length > 1 &&
+             m && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m.value.trim());
+    }
+    card.querySelectorAll('.sc-reveal').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var err = card.querySelector('[data-err]');
+        if (!valid()) { if (err) err.hidden = false; return; }
+        if (err) err.hidden = true;
+        var max = 0, got = 0;
+        qEls.forEach(function (q) {
+          var pts = [].slice.call(q.querySelectorAll('.sc-opt')).map(function (o) {
+            return parseFloat(o.getAttribute('data-points')) || 0;
+          });
+          max += Math.max.apply(null, pts.concat([0]));
+          got += picks[q.getAttribute('data-step')] || 0;
+        });
+        var pct = max > 0 ? Math.round((got / max) * 100) : 0;
+        var tiers = [].slice.call(card.querySelectorAll('.sc-tier')).sort(function (a, b2) {
+          return (+a.getAttribute('data-min')) - (+b2.getAttribute('data-min'));
+        });
+        var tier = tiers[0];
+        tiers.forEach(function (t) { if (pct >= (+t.getAttribute('data-min'))) tier = t; });
+        var sEl = card.querySelector('[data-score]'); if (sEl) sEl.textContent = pct;
+        var lEl = card.querySelector('[data-tierlabel]'); if (lEl && tier) lEl.textContent = tier.getAttribute('data-label');
+        var mEl = card.querySelector('[data-tiermsg]'); if (mEl && tier) mEl.textContent = tier.textContent;
+        go('result');
+      });
+    });
+    card.querySelectorAll('[data-restart]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        picks = {};
+        card.querySelectorAll('.sc-opt.is-sel').forEach(function (o) { o.classList.remove('is-sel'); });
+        card.querySelectorAll('.sc-in').forEach(function (i) { i.value = ''; });
+        var err = card.querySelector('[data-err]'); if (err) err.hidden = true;
+        go('intro');
+      });
+    });
+  })();
+</script>
+
+<!-- [Sticky] Mobile CTA Bar — Anrufen + WhatsApp. Erscheint erst nach dem Hero. -->
+<aside class="sticky-cta" data-sticky-cta aria-label="Schneller Kontakt">
+  <a href={telHref} class="sticky-cta-btn sticky-cta-call">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+    <span>Anrufen</span>
+  </a>
+  <a href={waHref} class="sticky-cta-btn sticky-cta-wa" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.3-.76.96-.93 1.16-.17.2-.34.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.34.45-.51.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.66-1.6-.9-2.18-.24-.57-.48-.5-.66-.5l-.56-.01c-.2 0-.51.07-.78.37-.27.3-1.02 1-1.02 2.44 0 1.44 1.05 2.83 1.2 3.03.15.2 2.06 3.14 4.99 4.4.7.3 1.24.48 1.66.62.7.22 1.33.19 1.83.11.56-.08 1.75-.71 2-1.4.25-.69.25-1.28.17-1.4-.07-.13-.27-.2-.57-.35Zm-5.4 7.36c-1.65 0-3.27-.44-4.69-1.28l-.34-.2-3.48.91.93-3.39-.22-.36c-.92-1.47-1.41-3.16-1.41-4.9 0-5.07 4.13-9.2 9.21-9.2 2.46 0 4.77.96 6.51 2.7 1.74 1.74 2.69 4.05 2.69 6.51 0 5.08-4.13 9.21-9.2 9.21Zm7.83-17.05A11.04 11.04 0 0 0 12.11 1c-6.1 0-11.07 4.96-11.07 11.06 0 1.95.51 3.85 1.48 5.52L1 23l5.55-1.46a11.06 11.06 0 0 0 5.56 1.42h.01c6.1 0 11.07-4.96 11.07-11.06 0-2.96-1.15-5.74-3.24-7.83Z"/></svg>
+    <span>WhatsApp</span>
+  </a>
+</aside>
+
+<script>
+  (function () {
+    var bar = document.querySelector('[data-sticky-cta]');
+    var hero = document.querySelector('.cine');
+    if (!bar || !hero) return;
+    if (!('IntersectionObserver' in window)) {
+      bar.setAttribute('data-visible', 'true');
+      return;
+    }
+    var io = new IntersectionObserver(function (ents) {
+      ents.forEach(function (en) {
+        if (en.isIntersecting) bar.removeAttribute('data-visible');
+        else bar.setAttribute('data-visible', 'true');
+      });
+    }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' });
+    io.observe(hero);
   })();
 </script>
 

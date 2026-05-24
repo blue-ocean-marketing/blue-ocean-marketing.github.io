@@ -1,19 +1,39 @@
 ---
-// [Template] Zahnarzt — Praxis-Demo (Hero-Card · Leistungen · Team · Bewertungen · Kontaktformular)
+// [Template] Zahnarzt — „Clear Clinical" (Nav · Hero · Cinema · Trust · Leistungen · Team · Stimmen · Kontakt)
 // Datengetrieben aus einer Client-Config (Form: clients/_schema.json).
-// Styles 1:1 aus der ursprünglichen Standalone-Seite portiert — nur Markenfarben
-// sind jetzt CSS-Variablen aus config.marke.farben (das ist genau das injizierte Element).
-// Genutzte Config-Felder: marke (name, slogan, logo, farben), kontakt, hero?, leistungen, team, bewertungen.
+// Design-Prinzip: viel Weißraum, EINE ruhige Markenfarbe als Akzent, Haarlinien statt
+// Karten-Schatten, eine Schrift (Manrope), Strich-Icons (kein Emoji).
+// Seriös & klinisch-ruhig, aber mit kreativem 3D-Rückgrat — gleiche Bauweise wie GolfTemplate.
+//
+// 3D (selbst-gehostete glTF via <model-viewer> aus public/models/zahnarzt/).
+// Fehlt die Datei → Strich-Zahn-Fallback, kein Crash.
+//   • [Story] Tooth Strata: EINE gepinnte, scroll-gekoppelte Sequenz mit
+//     Seitenwechsel — der Zahn schwebt, dreht sich langsam (Facetten zeigen)
+//     und driftet von Seite zu Seite, während der Text auf der freien
+//     Gegenseite einblendet. Erzählung folgt der Zahn-Anatomie: Schmelz →
+//     Dentin → Pulpa → Termin. Zum Schluss zieht sich der Zahn ruhig zurück
+//     (Zoom-out + Fade), der CTA bleibt als Schlussbild.
+//     Zahn & Text immer auf Gegenseiten → kein Überlappen.
+//     Choreografie-Wahrheit = BANDS-Tabelle im Controller-JS.
+//     Mobil → gepinnt, aber senkrecht. Reduced-Motion → entpinnt, gestapelt.
+// CC-BY-4.0 → Urheber-Credit im Footer ist Pflicht (gesetzt, hasModel-gated).
+//
+// Genutzte Config-Felder (Schema = LeadBook-Schnittstelle, NICHT umbenennen):
+//   marke · kontakt · hero? · leistungen[]{icon,titel,text} · team[] · bewertungen[]
+// Sample-Inhalt (agentur-gepflegt, nicht pro Kunde): Trust-Punkte, Cinema-Szenen.
+import { existsSync } from 'node:fs';
 import { Image } from 'astro:assets';
 import { clientImage } from '../_shared/clientImage';
+import logoDefault from '../../assets/zahnarzt/logo.webp';
+import VerticalReel from '../../components/showcase/VerticalReel.astro';
 
 interface Farben { primary: string; secondary?: string; accent?: string }
 interface Config {
   slug: string;
   marke: { name: string; slogan?: string | null; logo?: string | null; farben: Farben };
-  kontakt: { adresse?: string | null; telefon: string; email: string; oeffnung?: string | null };
-  hero?: { ueberschrift?: string; text?: string } | null;
-  leistungen?: { icon?: string; titel: string; text: string }[];
+  kontakt: { adresse?: string | null; stadt?: string | null; telefon: string; email: string; oeffnung?: string | null };
+  hero?: { ueberschrift?: string; text?: string; cta_text?: string; cta_ziel?: string } | null;
+  leistungen?: { icon?: string; titel: string; text?: string }[];
   team?: { name: string; rolle: string; bild?: string | null; initialen?: string | null }[];
   bewertungen?: { name: string; sterne: number; text: string }[];
 }
@@ -22,33 +42,156 @@ const { config } = Astro.props as { config: Config };
 const { slug } = config;
 const { name, slogan, logo, farben } = config.marke;
 const { adresse, telefon, email, oeffnung } = config.kontakt;
+const stadtRaw = config.kontakt.stadt;
 const leistungen = config.leistungen ?? [];
 const team = config.team ?? [];
 const bewertungen = config.bewertungen ?? [];
 
-// Avatar-Palette: zyklisch durch die Markenfarben (ersetzt die früheren festen Einzelfarben)
+// Avatar-Palette: zyklisch durch die Markenfarben (Fallback wenn kein Foto)
 const palette = [farben.primary, farben.secondary ?? farben.primary, farben.accent ?? farben.primary];
 
-// CSS-Variablen: nur die 3 Basisfarben werden injiziert, abgeleitete Töne via color-mix
+// CSS-Variablen: nur die 3 Basisfarben werden injiziert, abgeleitete Töne via color-mix.
 const cssVars =
   `--c-primary:${farben.primary};` +
   `--c-secondary:${farben.secondary ?? farben.primary};` +
   `--c-accent:${farben.accent ?? farben.primary};`;
 
 // Ort sicher aus der Adresse ableiten (Adresse kann null sein / kein Komma haben)
-const ort = adresse && adresse.includes(',') ? adresse.split(',')[1].trim() : '';
+const ort = adresse && adresse.includes(',') ? adresse.split(',').slice(-1)[0].trim() : '';
+// Saubere Stadt für den Hero-Tag: bevorzugt kontakt.stadt, sonst extrahiert.
+const stadt = stadtRaw ?? ort;
 
 const logoImg = clientImage(slug, logo);
-const titel = config.hero?.ueberschrift ?? slogan ?? name;
-const heroText =
-  config.hero?.text ??
-  `Moderne Zahnmedizin${ort ? ` in ${ort}` : ''} — einfühlsam, schmerzfrei und auf dem neuesten Stand der Technik.`;
-const telHref = `tel:${telefon.replace(/\s/g, '')}`;
+
+// Showcase-Defaults greifen NUR auf der öffentlichen Demo-Marke. Echte Kunden
+// ohne eigenes Logo/Foto behalten Text-Wortmarke bzw. Initialen-Avatar
+// (gleiche Mechanik wie Golf).
+const isShowcase = /blue\s*ocean\s*zahnarztpraxis/i.test(name);
+const useDefaultLogo = !logoImg && isShowcase;
+// Branchen-eigene Demo-Team-Fotos (web-optimiert, astro:assets). Glob statt
+// statischem Import → fehlt eine Datei, kein Build-Crash. Reihenfolge =
+// Demo-Team-Reihenfolge.
+const teamGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/zahnarzt/team-*.webp', { eager: true });
+const teamDefaults = Object.keys(teamGlob).sort().map((k) => teamGlob[k].default);
+
+// Praxis-Standbilder für [Showcase] Vertical Reel — Frames aus den Hero-Reels
+// (extrahiert per ffmpeg, web-optimiert via astro:assets).
+const galGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/zahnarzt/clinic-*.webp', { eager: true });
+const galDefaults = Object.keys(galGlob).sort().map((k) => galGlob[k].default);
+
+// Hero-H1-Block (universell: branchen-sub · name · stadt-tag) + 1-zeiliger Lead.
+const heroBrancheSub = 'Zahnarztpraxis';
+const heroBrancheTag = 'Zahnarzt';
+const heroLead = config.hero?.text ?? slogan ?? 'Moderne Zahnmedizin. Ruhig, gründlich, ehrlich.';
+const ctaText = config.hero?.cta_text ?? 'Termin vereinbaren';
+const ctaZiel = config.hero?.cta_ziel ?? '#kontakt';
+const telHref = `tel:${telefon.replace(/[^+\d]/g, '')}`;
+// WhatsApp: rohe Ziffern, deutsche Vorwahl (0 → 49) wenn führend
+const waDigits = telefon.replace(/[^\d]/g, '').replace(/^0/, '49');
+const waHref = `https://wa.me/${waDigits}?text=${encodeURIComponent(`Hallo ${name}, ich möchte einen Termin vereinbaren.`)}`;
+
+// Bewertungs-Schnitt ehrlich aus den echten Daten (keine erfundene Zahl).
+const bewAvg = bewertungen.length
+  ? (bewertungen.reduce((s, b) => s + b.sterne, 0) / bewertungen.length)
+  : 0;
+const bewAvgStr = bewAvg.toFixed(1).replace('.', ',');
 
 function initialen(t: { name: string; initialen?: string | null }) {
   if (t.initialen) return t.initialen;
   return t.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 }
+
+// Strich-Icons (Feather-Stil, currentColor) — kein Emoji.
+const I = {
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/><path d="m9 15 2 2 4-4"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.26 6.6.79-4.9 4.6 1.3 6.55L12 17.1 6.1 20.2l1.3-6.55-4.9-4.6 6.6-.79Z"/></svg>',
+  menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6l-7-3Z"/></svg>',
+  tooth: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22c0-8 6-13 16-13s16 5 16 13c0 6-3 9-3 16 0 7-2 16-5 16-3 0-3-9-5-12-1-2-3-2-4 0-2 3-2 12-5 12-3 0-5-9-5-16 0-7-3-10-3-16Z"/><path d="M24 24c2-3 5-4 8-4s6 1 8 4"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.3-.76.96-.93 1.16-.17.2-.34.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.34.45-.51.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.66-1.6-.9-2.18-.24-.57-.48-.5-.66-.5l-.56-.01c-.2 0-.51.07-.78.37-.27.3-1.02 1-1.02 2.44 0 1.44 1.05 2.83 1.2 3.03.15.2 2.06 3.14 4.99 4.4.7.3 1.24.48 1.66.62.7.22 1.33.19 1.83.11.56-.08 1.75-.71 2-1.4.25-.69.25-1.28.17-1.4-.07-.13-.27-.2-.57-.35Zm-5.4 7.36c-1.65 0-3.27-.44-4.69-1.28l-.34-.2-3.48.91.93-3.39-.22-.36c-.92-1.47-1.41-3.16-1.41-4.9 0-5.07 4.13-9.2 9.21-9.2 2.46 0 4.77.96 6.51 2.7 1.74 1.74 2.69 4.05 2.69 6.51 0 5.08-4.13 9.21-9.2 9.21Zm7.83-17.05A11.04 11.04 0 0 0 12.11 1c-6.1 0-11.07 4.96-11.07 11.06 0 1.95.51 3.85 1.48 5.52L1 23l5.55-1.46a11.06 11.06 0 0 0 5.56 1.42h.01c6.1 0 11.07-4.96 11.07-11.06 0-2.96-1.15-5.74-3.24-7.83Z"/></svg>',
+};
+
+const navLinks = [
+  { href: '#leistungen', label: 'Leistungen' },
+  { href: '#story', label: 'Der Zahn' },
+  { href: '#team', label: 'Praxisteam' },
+  { href: '#stimmen', label: 'Stimmen' },
+  { href: '#kontakt', label: 'Kontakt' },
+];
+
+// Sample-Inhalt (agentur-gepflegt, nicht pro Kunde personalisiert):
+const trust = [
+  'Alle Kassen & privat',
+  'Kurzfristige Notfalltermine',
+  'Moderne Diagnostik',
+  'Ruhige, entspannte Atmosphäre',
+  'Angstpatienten willkommen',
+  'Barrierefreie Praxis',
+];
+
+// [Vertrauen] Assurance Bar — agentur-gepflegt, branche-spezifisch.
+// Conversion-Hebel #1 laut zielgruppen.md: Angst aktiv entschärfen, hoch
+// platziert (vor dem Showpiece), Kosten-Angst nehmen. Siehe conversion-playbook.md.
+const assureKicker = 'Keine Angst nötig';
+const assureTitel = 'Angst vorm Zahnarzt? Bei uns ist das völlig okay.';
+const assureText = 'Viele kommen mit einem mulmigen Gefühl zu uns — und bleiben, weil es hier anders läuft: ruhig, ehrlich erklärt, in Ihrem Tempo.';
+const assure = [
+  { t: 'Sanft und ohne Hektik', d: 'Wir nehmen uns Zeit und erklären jeden Schritt, bevor er passiert.' },
+  { t: 'Kosten vorher klar', d: 'Jede Behandlung und ihr Preis wird vorab besprochen — keine Überraschung auf der Rechnung.' },
+  { t: 'Schnell da, wenn es drückt', d: 'Akute Schmerzen? Kurzfristige Notfalltermine, auch für neue Patientinnen und Patienten.' },
+];
+
+// [Scorecard] Self-Check — interaktiver Lead-Magnet nach der Priestley/ScoreApp-
+// Methodik (Landing → Fragen → Lead → dynamisches Ergebnis). Fragen wecken
+// „schlummernde" Spannung (Vorsorge, Zahnfleisch, Angst-Aufschub), nicht-salesy,
+// einfache Antworten. Tiers so getunt, dass der ideale Patient „solide Basis,
+// Luft nach oben" sieht (= Spannung Richtung Termin). Siehe scoreapp.md.
+const sc = {
+  kicker: 'Kostenloser Selbst-Check',
+  titel: 'Wie gesund sind Ihre Zähne wirklich?',
+  intro: 'Sechs einfache Fragen, eine ehrliche Einschätzung in 2 Minuten — und ein klarer nächster Schritt. Ganz ohne Termin und Wartezimmer.',
+  meta: ['6 Fragen', 'ca. 2 Minuten', 'Sofort-Ergebnis'],
+  startLabel: 'Check starten',
+  note: 'Entwickelt mit unserem Praxisteam — als ehrliche Orientierung, nicht als Diagnose.',
+  fragen: [
+    { q: 'Wann waren Sie zuletzt zur zahnärztlichen Kontrolle?', a: [ { t: 'In den letzten 6 Monaten', p: 3 }, { t: 'Vor 6–18 Monaten', p: 1 }, { t: 'Länger her / weiß nicht mehr', p: 0 } ] },
+    { q: 'Blutet Ihr Zahnfleisch beim Putzen oder bei Zahnseide?', a: [ { t: 'Nie', p: 3 }, { t: 'Ab und zu', p: 1 }, { t: 'Öfter', p: 0 } ] },
+    { q: 'Reagieren Ihre Zähne empfindlich auf heiß, kalt oder süß?', a: [ { t: 'Nein', p: 2 }, { t: 'Leicht', p: 1 }, { t: 'Deutlich', p: 0 } ] },
+    { q: 'Sind Sie mit dem Aussehen Ihrer Zähne zufrieden (Farbe, Stand)?', a: [ { t: 'Voll und ganz', p: 2 }, { t: 'Geht so', p: 1 }, { t: 'Eher nicht', p: 0 } ] },
+    { q: 'Lassen Sie regelmäßig eine professionelle Zahnreinigung machen?', a: [ { t: '1–2× pro Jahr', p: 3 }, { t: 'Unregelmäßig', p: 1 }, { t: 'Nie', p: 0 } ] },
+    { q: 'Schieben Sie Zahnarztbesuche wegen Unbehagen oder Angst auf?', a: [ { t: 'Nein', p: 2 }, { t: 'Manchmal', p: 1 }, { t: 'Ja, regelmäßig', p: 0 } ] },
+  ],
+  leadTitel: 'Wohin dürfen wir Ihr Ergebnis schicken?',
+  leadSub: 'Ihr Ergebnis sehen Sie sofort. Ihre Angaben brauchen wir nur, falls Sie eine persönliche Einschätzung möchten.',
+  tiers: [
+    { min: 0,  label: 'Es ist Zeit für einen Blick', msg: 'Einige Punkte deuten auf Handlungsbedarf hin — je früher, desto einfacher und günstiger. Kein Grund zur Sorge: genau dafür sind wir da, in Ruhe und ohne Druck.' },
+    { min: 50, label: 'Solide Basis, Luft nach oben', msg: 'Ihre Zahngesundheit ist auf einem guten Weg. Mit gezielter Vorsorge holen Sie das letzte Stück heraus — eine kurze Bestandsaufnahme lohnt sich.' },
+    { min: 80, label: 'Sehr gepflegt — weiter so', msg: 'Stark. Damit das so bleibt, zählt jetzt vor allem Konstanz: ein regelmäßiger Kontroll- und Prophylaxe-Rhythmus sichert das Ergebnis.' },
+  ],
+};
+
+// [Story] Tooth Strata — Copy-Szenen, am Scroll an die Zahn-Bahn gekoppelt.
+// Erzählung folgt den Schichten des Zahns (Schmelz → Dentin → Pulpa) und
+// endet beim Termin. Szene 0 & 4 tragen den Haupt-CTA.
+const scenes = [
+  { eyebrow: ort ? `Zahnarztpraxis · ${ort}` : 'Willkommen', titel: 'Vom ersten Termin an.', text: 'Ruhige Aufnahme, klare Erklärung, ein Plan, der zu Ihnen passt — Zahnmedizin ohne Hektik, vom ersten Blick an.', cta: true },
+  { eyebrow: 'Schicht 01 · Schmelz', titel: 'Außen: harter Schutz.', text: 'Die härteste Substanz im Körper — und Ihre beste Vorsorge. Professionelle Reinigung und Prophylaxe halten sie stark.' },
+  { eyebrow: 'Schicht 02 · Dentin', titel: 'Darunter: das Lebendige.', text: 'Hier wird ein Zahn empfindlich. Wir behandeln substanzschonend, präzise und so, dass möglichst viel Ihr Zahn bleibt.' },
+  { eyebrow: 'Schicht 03 · Pulpa', titel: 'Im Kern: Vertrauen.', text: 'Tief innen sitzt der Nerv — und das Empfindliche an jedem Termin. Genau dort arbeiten wir besonders behutsam.' },
+  { eyebrow: 'Ihr Termin', titel: 'Bleiben Sie gesund.', text: 'Vorsorge, Behandlung oder ein Notfall — schreiben Sie uns, wir finden zeitnah einen ruhigen Termin für Sie.', cta: true },
+];
+
+// [Story] Tooth Strata — selbst gehostetes 3D-Modell (Molar).
+const modelSrc = '/models/zahnarzt/scene.gltf';
+const hasModel = existsSync(`${process.cwd()}/public/models/zahnarzt/scene.gltf`);
+const modelCredit =
+  '3D-Modell „Molar_Tooth" von Mastart (sketchfab.com/mastart), lizenziert unter CC-BY-4.0.';
 ---
 <!doctype html>
 <html lang="de" style={cssVars}>
@@ -58,372 +201,1443 @@ function initialen(t: { name: string; initialen?: string | null }) {
   <title>{name}{slogan ? ` — ${slogan}` : ''}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=optional" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style is:global>
     :root {
-      --c-primary-dark: color-mix(in srgb, var(--c-primary) 80%, black);
-      --c-tint:  color-mix(in srgb, var(--c-primary) 8%, white);
-      --c-tint2: color-mix(in srgb, var(--c-primary) 14%, white);
-      --c-primary-12: color-mix(in srgb, var(--c-primary) 12%, transparent);
-      --c-primary-25: color-mix(in srgb, var(--c-primary) 25%, transparent);
-      --c-primary-30: color-mix(in srgb, var(--c-primary) 30%, transparent);
+      /* Markenfarbe sparsam — abgeleitete Töne via color-mix */
+      --c-primary-dark: color-mix(in srgb, var(--c-primary) 78%, black);
+      --c-wash:         color-mix(in srgb, var(--c-primary) 5%, white);
+      --c-soft:         color-mix(in srgb, var(--c-primary) 10%, white);
+      --c-line-brand:   color-mix(in srgb, var(--c-primary) 22%, transparent);
+      --c-glow:         color-mix(in srgb, var(--c-primary) 26%, transparent);
+
+      /* Neutrale Design-Farben — fix, NICHT aus der Config */
+      --ink:    #0f1729;
+      --body:   #44505f;
+      --muted:  #6b7685;
+      --faint:  #97a1ad;
+      --line:   #e7e9ee;
+      --line-2: #dde0e7;
+      --surface:#ffffff;
+      --paper:  #f6f7f9;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, sans-serif; color: #1e293b; background: #fff; }
-    .serif { font-family: 'Playfair Display', Georgia, serif; }
+    html { scroll-behavior: smooth; overflow-x: clip; }
+    body {
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+      color: var(--body); background: var(--paper);
+      -webkit-font-smoothing: antialiased; line-height: 1.6;
+      overflow-x: clip; overscroll-behavior-x: none;
+    }
+    h1, h2, h3 { color: var(--ink); line-height: 1.14; letter-spacing: -0.02em; }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
 
-    /* DEMO BANNER */
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 0 1.5rem; }
+    .ico { display: inline-flex; }
+    .ico svg { width: 1.15em; height: 1.15em; display: block; }
+
+    .eyebrow {
+      display: inline-block; font-size: 0.74rem; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--c-primary-dark);
+    }
+    .lead { color: var(--muted); font-size: 1.06rem; line-height: 1.7; }
+
+    /* Buttons — Touch-Target ≥ 44px */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      padding: 0.85rem 1.6rem; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 700; text-decoration: none;
+      min-height: 48px; cursor: pointer; border: 1px solid transparent;
+      transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s;
+    }
+    .btn-primary { background: var(--c-primary); color: #fff; }
+    .btn-primary:hover { background: var(--c-primary-dark); transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+    .btn-ghost:hover { border-color: var(--ink); }
+    .btn .ico svg { width: 1.05em; height: 1.05em; }
+
+    /* ─────────── [Nav] Clinic Bar ─────────── */
     .demo-banner {
-      background: #0d0d14;
-      color: #94a3b8;
-      text-align: center;
-      padding: 0.6rem 1rem;
-      font-size: 0.75rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid var(--c-primary-30);
+      background: var(--ink); color: #aeb6c2;
+      text-align: center; padding: 0.6rem 1.5rem;
+      font-size: 0.78rem; line-height: 1.5;
     }
-    .demo-banner a { color: var(--c-primary); text-decoration: none; font-weight: 600; }
+    .demo-banner a { color: #fff; text-decoration: none; font-weight: 700; }
+    .demo-banner .dot { color: color-mix(in srgb, var(--c-primary) 70%, white); }
+    .demo-banner .cta {
+      display: inline-block; margin-left: 0.6rem;
+      background: var(--c-primary); color: #fff;
+      padding: 0.2rem 0.7rem; border-radius: 5px; font-weight: 700;
+    }
 
-    /* NAV */
-    nav {
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 37px;
-      z-index: 50;
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px);
+      border-bottom: 1px solid var(--line);
     }
-    .nav-logo { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
-    .nav-logo span { color: var(--c-primary); }
-    .nav-logo img { height: 40px; width: auto; display: block; }
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
-    .nav-links a { color: #475569; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+    .nav-inner {
+      padding: 0.85rem clamp(1.25rem, 4vw, 3rem);
+      display: flex; align-items: center; gap: 1.5rem; flex-wrap: nowrap;
+    }
+    .brand {
+      font-size: 1.12rem; font-weight: 800; color: var(--ink);
+      text-decoration: none; letter-spacing: -0.02em;
+      white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .brand .mark { color: var(--c-primary); display: inline-flex; }
+    .brand .mark svg { width: 1.25rem; height: 1.25rem; }
+    .brand span { color: var(--c-primary); }
+    .brand img { height: 38px; width: auto; display: block; }
+    .brand img.brand-emblem { height: 52px; }
+    @media (max-width: 480px) { .brand img.brand-emblem { height: 44px; } }
+    .nav-links {
+      display: flex; align-items: center; gap: 1.6rem; list-style: none;
+      margin-left: auto;
+    }
+    .nav-links a {
+      color: var(--body); text-decoration: none; white-space: nowrap;
+      font-size: 0.92rem; font-weight: 600; padding: 0.4rem 0;
+    }
+    .nav-links a:hover { color: var(--c-primary); }
+    .nav-actions { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+    .nav-call {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      color: var(--ink); text-decoration: none; font-weight: 700;
+      font-size: 0.9rem; min-height: 44px; white-space: nowrap;
+    }
+    .nav-call:hover { color: var(--c-primary); }
     .nav-cta {
-      background: var(--c-primary); color: white;
-      padding: 0.6rem 1.5rem; border-radius: 8px;
-      font-size: 0.875rem; font-weight: 600;
-      text-decoration: none; border: none; cursor: pointer;
+      background: var(--c-primary); color: #fff; text-decoration: none;
+      padding: 0 1.15rem; border-radius: 8px; white-space: nowrap;
+      font-size: 0.88rem; font-weight: 700; min-height: 44px;
+      display: inline-flex; align-items: center;
     }
+    .nav-cta:hover { background: var(--c-primary-dark); }
+    .menu { display: none; }
+    .menu > summary { list-style: none; }
+    .menu > summary::-webkit-details-marker { display: none; }
+    .burger {
+      width: 46px; height: 46px; border: 1px solid var(--line-2);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      color: var(--ink); cursor: pointer;
+    }
+    .menu-panel { display: none; }
 
-    /* HERO */
-    .hero {
-      background: linear-gradient(135deg, var(--c-tint) 0%, var(--c-tint2) 50%, var(--c-tint) 100%);
-      padding: 5rem 2rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      align-items: center;
+    /* ─────────── [Hero] Praxis Reel — Vollbild-Video-Reel ─────────── */
+    /* Hintergrund: 4 Clips (Desktop) bzw. 1 Hochformat (Mobil), per JS
+       gewählt — kein doppelter Download. Reduced-Motion/Save-Data → Poster. */
+    .cine {
+      position: relative; min-height: 92vh; min-height: 92svh;
+      display: flex; align-items: flex-end;
+      overflow: hidden; background: var(--ink); isolation: isolate;
     }
-    @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; gap: 2rem; }
-      .nav-links { display: none; }
+    .cine-bg { position: absolute; inset: 0; z-index: 0; }
+    .cine-poster, .cine-vid {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; display: block;
     }
-    .hero-badge {
+    .cine-poster { z-index: 0; }
+    .cine-vid {
+      z-index: 1; opacity: 0;
+      transition: opacity 1.1s ease; will-change: opacity;
+    }
+    .cine-vid.on { opacity: 1; }
+    /* Marken-Schimmer oben rechts + Lesbarkeits-Verlauf unten/links */
+    .cine-bg::before {
+      content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      background: radial-gradient(ellipse 58% 58% at 82% 14%,
+        var(--c-glow) 0%, transparent 60%);
+    }
+    .cine-bg::after {
+      content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      background:
+        linear-gradient(to top, rgba(8,12,22,0.88) 0%, rgba(8,12,22,0.30) 46%, rgba(8,12,22,0.16) 100%),
+        linear-gradient(to right, rgba(8,12,22,0.56) 0%, rgba(8,12,22,0.10) 60%, transparent 100%);
+    }
+    .cine-inner {
+      position: relative; z-index: 3; width: 100%;
+      max-width: 1140px; margin: 0 auto;
+      padding: clamp(3rem, 8vw, 6rem) 1.5rem clamp(3.5rem, 7vw, 5.5rem);
+    }
+    .cine-stage { max-width: 40rem; }
+    .cine .eyebrow {
+      color: #fff; background: color-mix(in srgb, var(--c-primary) 62%, transparent);
+      padding: 0.36rem 0.9rem; border-radius: 100px;
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    }
+    /* [Hero] Brand H1 — universeller 3-zeiliger Block: sub · name · tag */
+    .cine h1 { margin: 0.6rem 0 1.1rem; display: flex; flex-direction: column; gap: 0.35rem; max-width: 18ch; }
+    .cine h1 .h1-sub {
+      font-size: clamp(0.95rem, 1.4vw, 1.15rem); font-weight: 500;
+      letter-spacing: 0.02em; color: rgba(255,255,255,0.78); line-height: 1.2;
+    }
+    .cine h1 .h1-name {
+      color: #fff; font-size: clamp(2.4rem, 6.4vw, 4.6rem);
+      font-weight: 800; letter-spacing: -0.025em; line-height: 1.02;
+    }
+    .cine h1 .h1-tag {
+      align-self: flex-start; font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); margin-top: 0.45rem;
+    }
+    .cine-lead {
+      color: rgba(255,255,255,0.84); line-height: 1.7;
+      font-size: clamp(1rem, 1.5vw, 1.15rem); max-width: 34rem;
+    }
+    /* [Hero] Brand Mark — Logo linksbündig über der Headline (auf Video-Reel). */
+    .cine-brand { display: inline-flex; align-items: center; margin-bottom: clamp(0.75rem, 1.6vw, 1.25rem); }
+    .cine-brand img {
+      height: clamp(44px, 5.5vw, 68px); width: auto; max-width: min(240px, 62vw);
+      filter: drop-shadow(0 2px 18px rgba(0,0,0,0.5));
+    }
+    @media (max-width: 480px) {
+      .cine-brand img { height: 42px; max-width: 180px; }
+    }
+    .cine-actions { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 2.1rem; }
+    .btn-glass {
+      background: rgba(255,255,255,0.10); color: #fff;
+      border-color: rgba(255,255,255,0.34);
+      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    }
+    .btn-glass:hover { background: rgba(255,255,255,0.18); border-color: #fff; }
+    .cine-meta {
+      display: flex; flex-wrap: wrap; gap: 0.3rem 1.75rem; margin-top: 1.7rem;
+      font-size: 0.9rem; color: rgba(255,255,255,0.78);
+    }
+    .cine-meta a, .cine-meta span {
       display: inline-flex; align-items: center; gap: 0.5rem;
-      background: var(--c-primary-12); color: var(--c-primary-dark);
-      border: 1px solid var(--c-primary-25);
-      border-radius: 100px; padding: 0.375rem 1rem;
-      font-size: 0.78rem; font-weight: 600; margin-bottom: 1.5rem;
+      color: rgba(255,255,255,0.82); text-decoration: none; min-height: 40px;
     }
-    .hero h1 {
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 700; line-height: 1.2;
-      color: #0f172a; margin-bottom: 1.25rem;
+    .cine-meta a:hover { color: #fff; }
+    .cine-meta .ico { color: color-mix(in srgb, var(--c-primary) 55%, #fff); }
+    .cine-meta .ico svg { width: 1.05rem; height: 1.05rem; }
+    .cine-rating {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      margin-top: 1.5rem; font-size: 0.92rem; color: rgba(255,255,255,0.72);
     }
-    .hero p { color: #475569; font-size: 1.05rem; line-height: 1.7; margin-bottom: 2rem; }
-    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .btn-primary {
-      background: var(--c-primary); color: white;
-      padding: 0.875rem 2rem; border-radius: 10px;
-      font-size: 0.95rem; font-weight: 600;
-      text-decoration: none;
+    .cine-rating .stars { display: inline-flex; gap: 1px; color: #fff; }
+    .cine-rating .stars .ico svg { width: 1rem; height: 1rem; }
+    .cine-rating b { color: #fff; font-weight: 800; }
+    .cine-scroll {
+      position: absolute; left: 50%; bottom: 1.3rem; transform: translateX(-50%);
+      z-index: 3; display: flex; flex-direction: column; align-items: center;
+      gap: 0.45rem; text-decoration: none;
+      color: rgba(255,255,255,0.72); font-size: 0.64rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
     }
-    .btn-secondary {
-      background: transparent; color: var(--c-primary);
-      border: 2px solid var(--c-primary);
-      padding: 0.875rem 2rem; border-radius: 10px;
-      font-size: 0.95rem; font-weight: 600;
-      text-decoration: none;
+    .cine-scroll i {
+      display: block; width: 1px; height: 34px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.85));
+      animation: cineScroll 2s ease-in-out infinite;
     }
-    .hero-card {
-      background: white; border-radius: 20px;
-      padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    @keyframes cineScroll {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50%      { opacity: 0.9; transform: scaleY(1.18); }
     }
-    .hero-card h3 { color: #0f172a; font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; }
-    .info-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem; font-size: 0.875rem; color: #475569; }
-    .info-icon { width: 36px; height: 36px; background: var(--c-tint); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
+    @media (prefers-reduced-motion: reduce) {
+      .cine-vid { transition: none; }
+      .cine-scroll i { animation: none; }
+    }
 
-    /* SECTION */
-    section { padding: 5rem 2rem; }
-    .section-inner { max-width: 1100px; margin: 0 auto; }
-    .section-header { text-align: center; margin-bottom: 3rem; }
-    .section-label { font-size: 0.78rem; font-weight: 700; color: var(--c-primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
-    .section-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; color: #0f172a; margin-bottom: 0.75rem; }
-    .section-sub { color: #64748b; font-size: 0.975rem; max-width: 560px; margin: 0 auto; line-height: 1.6; }
-
-    /* LEISTUNGEN GRID */
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
-    .leistung-card {
-      background: #f8fafc; border: 1px solid #e2e8f0;
-      border-radius: 16px; padding: 1.75rem;
-      transition: box-shadow 0.2s, transform 0.2s;
+    /* ─────────── [Story] Tooth Strata — scroll-gekoppelte 3D-Sequenz ───────────
+       Aufbau: .cinema (Ancestor, KEIN overflow — sonst bricht sticky) →
+       .cinema-track (gibt den Scroll-Weg = Höhe) → .cinema-sticky (pinnt, clippt).
+       JS bewegt .cm-tooth per transform; Kamera via model-viewer cameraOrbit. */
+    .cinema { background: var(--ink); color: var(--paper); position: relative; padding: 0; }
+    .cinema-track { position: relative; min-height: 480vh; }
+    .cinema-sticky {
+      position: sticky; top: 0; height: 100svh; min-height: 100svh;
+      overflow: hidden; isolation: isolate;
     }
-    .leistung-card:hover { box-shadow: 0 8px 30px var(--c-primary-12); transform: translateY(-2px); }
-    .leistung-icon { font-size: 2rem; margin-bottom: 1rem; }
-    .leistung-card h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem; }
-    .leistung-card p { color: #64748b; font-size: 0.875rem; line-height: 1.6; }
+    /* ruhiger Marken-Schimmer + Boden-Vignette, hält die Bühne edel-dunkel */
+    .cinema-sticky::before {
+      content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 58% 56% at 70% 40%, var(--c-glow) 0%, transparent 62%),
+        radial-gradient(ellipse 95% 70% at 50% 122%, rgba(5,8,16,0.65) 0%, transparent 60%);
+    }
 
-    /* TEAM */
-    .team-bg { background: #f8fafc; }
-    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem; }
-    .team-card { background: white; border-radius: 16px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .avatar { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; color: white; margin: 0 auto 1rem; overflow: hidden; }
+    .cinema-stage { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    /* weicher Kontakt-/Boden-Schimmer — folgt dem Zahn, atmet mit dem Schweben */
+    .cm-shadow {
+      position: absolute; left: 50%; top: 50%; z-index: 0;
+      width: min(36vh, 320px); height: 5vh;
+      background: radial-gradient(ellipse, rgba(3,6,12,0.5) 0%, transparent 72%);
+      filter: blur(8px); transform: translate(-50%, -50%);
+      opacity: 0; pointer-events: none; will-change: transform, opacity;
+    }
+    .cm-obj {
+      position: absolute; top: 50%; left: 50%;
+      width: min(60vh, 540px); aspect-ratio: 1 / 1;
+      transform: translate(-50%, -50%);
+      will-change: transform, opacity;
+    }
+    .cm-obj model-viewer {
+      width: 100%; height: 100%;
+      background: transparent; --poster-color: transparent;
+      touch-action: pan-y; pointer-events: none;
+    }
+    .cm-fallback {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      color: color-mix(in srgb, var(--c-primary) 55%, #fff);
+    }
+    .cm-fallback svg { width: 52%; height: auto; }
+
+    .cinema-copy {
+      position: absolute; inset: 0; z-index: 2;
+      max-width: 1240px; left: 50%; transform: translateX(-50%);
+      pointer-events: none;
+    }
+    /* Seite je Szene fest (CSS), Sichtbarkeit/Slide treibt JS pro Frame —
+       deshalb KEINE CSS-Transition (würde gegen die rAF-Updates schmieren). */
+    .cm-scene {
+      position: absolute; top: 50%; width: min(30rem, 44%);
+      opacity: 0; transform: translate(0, -50%);
+    }
+    .cm-scene.side-left  { left: clamp(1.5rem, 6vw, 5rem); right: auto; }
+    .cm-scene.side-right { right: clamp(1.5rem, 6vw, 5rem); left: auto; }
+    .cm-scene .eyebrow { color: color-mix(in srgb, var(--c-primary) 52%, #fff); }
+    .cm-scene h2 {
+      color: #fff; font-size: clamp(2rem, 4.6vw, 3.4rem);
+      font-weight: 800; letter-spacing: -0.025em; margin: 0.6rem 0 0.9rem;
+    }
+    .cm-scene p { color: rgba(246,247,249,0.66); font-size: 1.05rem; line-height: 1.7; }
+    .cm-scene .btn { margin-top: 1.6rem; pointer-events: auto; }
+
+    .cinema-progress {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+      height: 3px; background: rgba(246,247,249,0.12);
+    }
+    .cinema-progress i {
+      display: block; height: 100%; width: 0%;
+      background: var(--c-primary); transition: width 0.1s linear;
+    }
+    .cinema-hint {
+      position: absolute; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
+      z-index: 3; font-size: 0.64rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: rgba(246,247,249,0.5);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cm-scene { transition: none; }
+    }
+
+    /* Gestapelt (Reduced-Motion via .is-static): kein Pin, alles lesbar.
+       transform:none!important neutralisiert die JS-Inline-Transforms. */
+    .cinema.is-static .cinema-track,
+    .cinema.is-static .cinema-sticky { position: static; height: auto; min-height: 0; }
+    .cinema.is-static .cinema-sticky { overflow: visible; padding: 3rem 0 3.5rem; }
+    .cinema.is-static .cinema-stage {
+      position: relative; inset: auto;
+      display: flex; gap: 1rem; justify-content: center; align-items: center;
+      height: 52vw; max-height: 340px; margin-bottom: 1rem;
+    }
+    .cinema.is-static .cm-obj {
+      position: relative; top: auto; left: auto;
+      width: 46%; max-width: 290px;
+      opacity: 1 !important; transform: none !important;
+    }
+    .cinema.is-static .cinema-copy {
+      position: static; transform: none; max-width: none;
+      padding: 0 clamp(1.5rem, 5vw, 3rem);
+    }
+    .cinema.is-static .cm-scene {
+      position: static; width: auto; max-width: none;
+      left: auto !important; right: auto !important;
+      opacity: 1 !important; transform: none !important;
+      padding: 1.4rem 0; border-top: 1px solid rgba(246,247,249,0.14);
+    }
+    .cinema.is-static .cm-scene:first-child { border-top: 0; }
+    .cinema.is-static .cm-shadow { display: none; }
+    .cinema.is-static .cinema-progress,
+    .cinema.is-static .cinema-hint { display: none; }
+
+    /* Mobil-Kino: bleibt gepinnt wie Desktop, aber der Zahn driftet SENKRECHT
+       und die Szenen sitzen mittig (kein Links/Rechts — zu schmal).
+       Track-Höhe + Modellgröße mobil entzerrt: weniger Scroll-Tunnel, prominenterer Zahn. */
+    .cinema.is-mobilecine .cinema-track { min-height: 320vh; }
+    .cinema.is-mobilecine .cm-obj { width: min(78vw, 320px); max-width: 90vw; }
+    .cinema.is-mobilecine .cm-scene {
+      left: 50%; right: auto; width: min(30rem, 90%); max-width: calc(100vw - 1.5rem);
+      top: auto; bottom: auto; text-align: center;
+    }
+    /* Text dicht ans Modell — Modell-Rand-Anker statt Viewport-Rand-Anker:
+       side-left (Zahn oben) → Text TOP knapp unter Zahn-Unterkante, wächst
+       nach unten. side-right (Zahn unten) → Text BOTTOM knapp über Zahn-
+       Oberkante, wächst nach oben. So bleibt der Spalt zum Modell konstant,
+       egal ob die Szene einen Button hat oder nicht. */
+    .cinema.is-mobilecine .cm-scene.side-right { bottom: 56vh; top: auto; }
+    .cinema.is-mobilecine .cm-scene.side-left  { top: 46vh; bottom: auto; }
+    .cinema.is-mobilecine .cm-scene .eyebrow { font-size: 0.66rem; }
+    .cinema.is-mobilecine .cm-scene h2 { font-size: clamp(1.35rem, 5.6vw, 1.7rem); margin: 0.45rem 0 0.55rem; word-break: break-word; }
+    /* Mobil: Body-Text raus — nur Eyebrow + Titel (+ CTA) bleiben, weniger Kollision mit dem Zahn. */
+    .cinema.is-mobilecine .cm-scene p  { display: none; }
+    .cinema.is-mobilecine .cm-scene .btn { margin-top: 1rem; }
+    @media (max-height: 720px) {
+      .cinema.is-mobilecine .cm-obj { width: min(60vw, 220px); }
+      .cinema.is-mobilecine .cm-scene h2 { font-size: 1.3rem; }
+    }
+
+    /* ─────────── [Vertrauen] Assurance Bar ─────────── */
+    .assure { background: var(--c-wash); border-top: 1px solid var(--line); }
+    .assure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+    .assure-lead h2 { font-size: clamp(1.5rem, 3vw, 2.15rem); line-height: 1.2; color: var(--ink); margin: 0.5rem 0 0.8rem; }
+    .assure-lead p { color: var(--body); font-size: 1rem; line-height: 1.65; max-width: 40ch; }
+    .assure-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.7rem; }
+    .assure-points { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
+    .assure-points li { display: flex; gap: 0.85rem; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.05rem 1.2rem; }
+    .assure-points .ico { color: var(--c-primary); flex: none; margin-top: 0.05rem; }
+    .assure-points .ico svg { width: 1.15rem; height: 1.15rem; }
+    .assure-points b { display: block; color: var(--ink); font-size: 0.98rem; margin-bottom: 0.18rem; }
+    .assure-points .ap-txt { color: var(--body); font-size: 0.9rem; line-height: 1.5; }
+    @media (max-width: 820px) {
+      .assure-grid { grid-template-columns: 1fr; gap: 1.9rem; }
+      .assure-lead p { max-width: none; }
+    }
+
+    /* ─────────── [Scorecard] Self-Check ─────────── */
+    .sc { background: var(--c-wash); border-top: 1px solid var(--line); }
+    .sc-card { max-width: 620px; margin: 0 auto; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(1.5rem, 4vw, 2.75rem); position: relative; overflow: hidden; }
+    .sc-progress { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--line); }
+    .sc-progress > i { display: block; height: 100%; width: 0; background: var(--c-primary); transition: width 0.4s ease; }
+    .sc-step { animation: scIn 0.32s ease; }
+    @keyframes scIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .sc-step h2 { font-size: clamp(1.5rem, 3.2vw, 2.1rem); color: var(--ink); line-height: 1.18; margin: 0.4rem 0 0.7rem; }
+    .sc-step h3 { font-size: clamp(1.2rem, 2.6vw, 1.55rem); color: var(--ink); line-height: 1.25; margin: 0.5rem 0 1.3rem; }
+    .sc-intro { color: var(--body); line-height: 1.6; }
+    .sc-meta { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 0.7rem; margin: 1.1rem 0 1.6rem; padding: 0; }
+    .sc-meta li { font-size: 0.8rem; font-weight: 600; color: var(--c-primary); background: var(--c-wash); border: 1px solid var(--line); border-radius: 100px; padding: 0.4rem 0.9rem; }
+    .sc-start, .sc-reveal, .sc-cta { width: 100%; justify-content: center; }
+    .sc-note { font-size: 0.78rem; color: var(--body); opacity: 0.78; margin-top: 1rem; }
+    .sc-count { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--c-primary); }
+    .sc-qhead { margin-bottom: 0.5rem; }
+    .sc-opts { display: grid; gap: 0.7rem; }
+    .sc-opt { text-align: left; font: inherit; font-size: 1rem; font-weight: 600; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; padding: 1rem 1.15rem; min-height: 52px; cursor: pointer; transition: border-color 0.15s, background 0.15s, transform 0.12s; }
+    .sc-opt:hover { border-color: var(--c-primary); transform: translateY(-1px); }
+    .sc-opt.is-sel { border-color: var(--c-primary); background: var(--c-wash); }
+    .sc-back, .sc-restart { display: inline-block; margin-top: 1.3rem; background: none; border: none; color: var(--body); font: inherit; font-size: 0.85rem; cursor: pointer; text-decoration: underline; padding: 0.5rem 0.25rem; min-height: 44px; }
+    .sc-field { margin-bottom: 1rem; }
+    .sc-field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--body); margin-bottom: 0.35rem; }
+    .sc-in { width: 100%; font: inherit; font-size: 1rem; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 0.85rem 1rem; min-height: 48px; }
+    .sc-in:focus { outline: none; border-color: var(--c-primary); }
+    .sc-err { color: #c0392b; font-size: 0.85rem; margin: 0.2rem 0 1rem; }
+    .sc-score { display: flex; align-items: baseline; gap: 0.5rem; margin: 0.6rem 0 0.5rem; }
+    .sc-score b { font-size: clamp(2.6rem, 8vw, 3.6rem); color: var(--c-primary); line-height: 1; }
+    .sc-score span { color: var(--body); font-size: 0.95rem; }
+    .sc-tierbadge { display: inline-block; font-weight: 700; color: var(--ink); background: var(--c-wash); border: 1px solid var(--line); border-radius: 100px; padding: 0.4rem 1rem; margin-bottom: 1rem; }
+    .sc-tiermsg { color: var(--body); line-height: 1.6; margin-bottom: 1.7rem; }
+    @media (max-width: 520px) { .sc-card { border-radius: 14px; } }
+
+    /* ─────────── [Trust] Endless Marquee ─────────── */
+    .trust {
+      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      background: var(--surface); overflow: hidden;
+    }
+    .trust-mask {
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+              mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+    }
+    .trust-track {
+      display: flex; width: max-content;
+      animation: trustScroll 34s linear infinite;
+    }
+    .trust:hover .trust-track { animation-play-state: paused; }
+    .trust-item {
+      display: flex; align-items: center; gap: 0.6rem; flex: none;
+      padding: 1.35rem 0; margin-right: 3rem; white-space: nowrap;
+      font-size: 0.95rem; font-weight: 700; color: var(--body);
+    }
+    .trust-item .ico { color: var(--c-primary); }
+    .trust-item .ico svg { width: 1.05rem; height: 1.05rem; }
+    @keyframes trustScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .trust-mask { -webkit-mask-image: none; mask-image: none; }
+      .trust-track {
+        animation: none; width: auto;
+        flex-wrap: wrap; justify-content: center;
+        gap: 0.5rem 2.5rem; padding: 1.1rem 1.5rem;
+      }
+      .trust-item { margin-right: 0; padding: 0; }
+      .trust-item[aria-hidden="true"] { display: none; }
+    }
+
+    /* ─────────── Section base ─────────── */
+    section { padding: 5.5rem 0; }
+    section { scroll-margin-top: 80px; }
+    .sec-head { max-width: 40rem; margin-bottom: 3.25rem; }
+    .sec-head h2 {
+      font-size: clamp(1.8rem, 3.4vw, 2.6rem); font-weight: 800;
+      margin: 0.85rem 0 0.85rem;
+    }
+    .sec-head p { color: var(--muted); font-size: 1.02rem; line-height: 1.68; }
+
+    .reveal {
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ─────────── [Leistungen] Section wrapper — Inhalt = VerticalReel-Komponente ─────────── */
+    .leist-sec { background: var(--surface); border-top: 1px solid var(--line); }
+
+    /* ─────────── [Team] Portrait Grid ─────────── */
+    .team-sec { background: var(--c-wash); border-top: 1px solid var(--line); }
+    .team-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 2rem 1.5rem;
+    }
+    .team-card { text-align: center; }
+    .avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.45rem; color: #fff;
+      margin: 0 auto 1.1rem; overflow: hidden;
+      box-shadow: 0 0 0 1px var(--line-2), 0 0 0 6px var(--surface);
+    }
     .avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .team-card h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin-bottom: 0.25rem; }
-    .team-card p { color: #64748b; font-size: 0.8rem; }
+    .team-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .team-card p { color: var(--muted); font-size: 0.9rem; }
 
-    /* BEWERTUNGEN */
-    .grid-bewertungen { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
-    .bew-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; }
-    .sterne { color: #f59e0b; font-size: 1rem; margin-bottom: 0.75rem; }
-    .bew-card p { color: #475569; font-size: 0.9rem; line-height: 1.65; margin-bottom: 1rem; font-style: italic; }
-    .bew-name { font-size: 0.85rem; font-weight: 600; color: #0f172a; }
-
-    /* KONTAKT */
-    .kontakt-bg { background: linear-gradient(135deg, var(--c-primary-dark), var(--c-primary)); color: white; }
-    .kontakt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
-    @media (max-width: 768px) { .kontakt-grid { grid-template-columns: 1fr; } }
-    .kontakt-bg h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 1rem; }
-    .kontakt-bg p { opacity: 0.85; line-height: 1.7; margin-bottom: 1.5rem; }
-    .kontakt-btn { display: inline-block; background: white; color: var(--c-primary-dark); padding: 0.875rem 2rem; border-radius: 10px; font-weight: 600; text-decoration: none; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%; padding: 0.75rem 1rem;
-      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 8px; color: white; font-size: 0.9rem; font-family: inherit;
+    /* ─────────── [Stimmen] Quote Wall ─────────── */
+    .stimmen-sec { background: var(--surface); border-top: 1px solid var(--line); }
+    .bew-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
     }
-    .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(255,255,255,0.6); }
-    .form-group select option { color: #0f172a; background: white; }
-    .form-btn {
-      width: 100%; background: white; color: var(--c-primary-dark);
-      padding: 0.875rem; border-radius: 8px;
-      font-weight: 700; font-size: 0.95rem;
-      border: none; cursor: pointer;
+    .bew-card {
+      border: 1px solid var(--line); border-left: 3px solid var(--c-primary);
+      border-radius: 0 14px 14px 0; padding: 1.75rem; background: var(--paper);
+    }
+    .bew-stars { display: inline-flex; gap: 2px; color: var(--c-primary); margin-bottom: 0.9rem; }
+    .bew-stars .ico svg { width: 1rem; height: 1rem; }
+    .bew-card p { color: var(--body); font-size: 0.97rem; line-height: 1.68; margin-bottom: 1.1rem; }
+    .bew-name { font-size: 0.86rem; font-weight: 700; color: var(--ink); }
+
+    /* ─────────── [Kontakt] Split Form ─────────── */
+    .kontakt-sec { background: var(--c-wash); border-top: 1px solid var(--line); }
+    .kontakt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+    .kontakt-info h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); font-weight: 800; margin-bottom: 1rem; }
+    .kontakt-info > p { color: var(--muted); font-size: 1.02rem; line-height: 1.68; margin-bottom: 2rem; }
+    .kontakt-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .kontakt-list a, .kontakt-list div {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 0.7rem 0; color: var(--body); text-decoration: none;
+      font-size: 0.97rem; border-bottom: 1px solid var(--line);
+    }
+    .kontakt-list .ico { color: var(--c-primary); }
+    .kontakt-list a:hover { color: var(--c-primary); }
+
+    .form-card {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 18px; padding: 2rem;
+    }
+    .form-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.4rem; }
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block; font-size: 0.8rem; font-weight: 700;
+      color: var(--ink); margin-bottom: 0.4rem;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 0.75rem 0.9rem; min-height: 46px;
+      background: var(--surface); border: 1px solid var(--line-2);
+      border-radius: 10px; color: var(--ink); font-size: 0.95rem;
+      font-family: inherit;
+    }
+    .field textarea { min-height: 92px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: var(--c-primary);
+      box-shadow: 0 0 0 3px var(--c-line-brand);
+    }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    .form-card .btn { width: 100%; justify-content: center; margin-top: 0.5rem; }
+    .form-note { font-size: 0.78rem; color: var(--faint); margin-top: 0.9rem; text-align: center; }
+
+    /* ─────────── [Footer] Minimal ─────────── */
+    footer { background: var(--surface); border-top: 1px solid var(--line); padding: 2.5rem 0; }
+    .foot-inner {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--muted);
+    }
+    .foot-inner a { color: var(--muted); text-decoration: none; }
+    .foot-inner a:hover { color: var(--c-primary); }
+    .foot-links { display: flex; gap: 1.5rem; }
+    .foot-credit { width: 100%; font-size: 0.78rem; color: var(--faint);
+      border-top: 1px solid var(--line); padding-top: 1.25rem; margin-top: 0.5rem; }
+    .foot-credit a { color: var(--c-primary); font-weight: 600; }
+
+    /* ─────────── Mobile First ─────────── */
+    @media (max-width: 1080px) {
+      .nav-call { display: none; }
+      .nav-links { gap: 1.3rem; }
+    }
+    @media (max-width: 900px) {
+      .nav-links, .nav-actions { display: none; }
+      .menu { display: block; position: relative; margin-left: auto; }
+      .menu[open] .menu-panel {
+        display: flex; flex-direction: column;
+        position: absolute; right: 0; top: calc(100% + 0.7rem);
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 14px; padding: 0.5rem; min-width: 220px;
+        box-shadow: 0 16px 38px rgba(15,23,41,0.14);
+      }
+      .menu-panel a {
+        padding: 0.85rem 1rem; text-decoration: none; color: var(--ink);
+        font-weight: 600; font-size: 0.95rem; border-radius: 10px;
+      }
+      .menu-panel a:hover { background: var(--paper); }
+      .menu-panel .btn-primary { margin-top: 0.35rem; }
+      section { padding: 4rem 0; }
+    }
+    @media (max-width: 880px) {
+      .kontakt-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .cine { min-height: 86svh; }
+      .cine-scroll { display: none; }
+      .field-row { grid-template-columns: 1fr; }
+      .foot-inner { flex-direction: column; align-items: flex-start; }
+      .bew-grid { grid-template-columns: 1fr; }
+      .demo-banner .cta { display: inline-block; padding: 0.45rem 0.9rem; }
+      .foot-links a { padding: 0.55rem 0; }
     }
 
-    /* FOOTER */
-    footer { background: #0f172a; color: #64748b; padding: 2rem; text-align: center; font-size: 0.8rem; }
-    footer a { color: #94a3b8; text-decoration: none; margin: 0 0.5rem; }
+    /* ─────────── [Sticky] Mobile CTA Bar — Anrufen + WhatsApp ─────────── */
+    .sticky-cta {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      z-index: 60; display: none; gap: 0.55rem;
+      padding: 0.55rem 0.6rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 24px rgba(15,10,22,0.10);
+      transform: translateY(110%);
+      transition: transform 0.32s cubic-bezier(.22,.61,.36,1);
+    }
+    .sticky-cta[data-visible="true"] { transform: translateY(0); }
+    .sticky-cta-btn {
+      flex: 1; min-height: 52px;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.55rem; border-radius: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; font-weight: 600; letter-spacing: 0.01em;
+      text-decoration: none; color: #fff;
+      transition: filter 0.18s ease, transform 0.12s ease;
+    }
+    .sticky-cta-btn:active { transform: scale(0.97); }
+    .sticky-cta-btn .ico svg { width: 1.15rem; height: 1.15rem; }
+    .sticky-cta-call { background: var(--c-primary); }
+    .sticky-cta-call:hover { background: var(--c-primary-dark); }
+    .sticky-cta-wa { background: #25D366; }
+    .sticky-cta-wa:hover { filter: brightness(0.95); }
+    @media (max-width: 767px) {
+      .sticky-cta { display: flex; }
+      body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sticky-cta { transition: none; }
+    }
   </style>
+  {hasModel && (
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
+  )}
 </head>
 <body>
 
-<!-- DEMO BANNER -->
+<!-- [Nav] Clinic Bar -->
 <div class="demo-banner">
-  🎨 Dies ist eine Musterseite von <a href="/">Blue Ocean Marketing</a> — personalisiert mit Ihrem Logo &amp; Ihren Farben in 48h.
-  <a href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener" style="margin-left: 0.75rem; background: var(--c-primary); color: white; padding: 0.2rem 0.75rem; border-radius: 4px;">Demo anfragen →</a>
+  <span class="dot">●</span> Musterseite von <a href="/">Blue Ocean Marketing</a> — in 48 h mit Ihrem Logo &amp; Ihren Farben.
+  <a class="cta" href="https://blue-ocean.marketing/kontakt/" target="_blank" rel="noopener">Demo anfragen</a>
 </div>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">
-    {logoImg
-      ? <Image src={logoImg} alt={name} height={40} width={Math.round(40 * (logoImg.width / logoImg.height))} />
-      : <Fragment>{name.split(' ')[0]} <span>{name.split(' ').slice(1).join(' ')}</span></Fragment>}
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      {logoImg
+        ? <Image src={logoImg} alt={name} height={38} width={Math.round(38 * (logoImg.width / logoImg.height))} />
+        : useDefaultLogo
+          ? <Image class="brand-emblem" src={logoDefault} alt={name} height={52} width={Math.round(52 * (logoDefault.width / logoDefault.height))} />
+          : <Fragment><span class="mark" set:html={I.tooth} />{name.split(' ')[0]}{' '}<span>{name.split(' ').slice(1).join(' ')}</span></Fragment>}
+    </a>
+
+    <ul class="nav-links">
+      {navLinks.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+    </ul>
+
+    <div class="nav-actions">
+      <a href={telHref} class="nav-call"><span class="ico" set:html={I.phone} />{telefon}</a>
+      <a href={ctaZiel} class="nav-cta">{ctaText}</a>
+    </div>
+
+    <details class="menu">
+      <summary><span class="burger" aria-label="Menü öffnen"><span class="ico" set:html={I.menu} /></span></summary>
+      <div class="menu-panel">
+        {navLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+        <a href={telHref}>{telefon}</a>
+        <a href={ctaZiel} class="btn btn-primary">{ctaText}</a>
+      </div>
+    </details>
   </div>
-  <ul class="nav-links">
-    <li><a href="#leistungen">Leistungen</a></li>
-    <li><a href="#team">Unser Team</a></li>
-    <li><a href="#bewertungen">Bewertungen</a></li>
-    <li><a href="#kontakt">Kontakt</a></li>
-  </ul>
-  <a href={telHref} class="nav-cta">📞 Termin vereinbaren</a>
 </nav>
 
-<!-- HERO -->
-<div style="background: linear-gradient(135deg, var(--c-tint) 0%, var(--c-tint2) 50%, var(--c-tint) 100%); padding: 0 2rem;">
-  <div class="hero">
-    <div>
-      <div class="hero-badge">⭐ 4,9 / 5 — über 200 Bewertungen</div>
-      <h1>{titel}</h1>
-      <p>{heroText}</p>
-      <div class="hero-actions">
-        <a href="#kontakt" class="btn-primary">Termin online buchen</a>
-        <a href="#leistungen" class="btn-secondary">Unsere Leistungen</a>
+<!-- [Hero] Praxis Reel -->
+<header class="cine">
+  <div class="cine-bg">
+    <picture>
+      <source media="(max-width: 767px)" srcset="/videos/zahnarzt/poster-mobile.webp" />
+      <img class="cine-poster" src="/videos/zahnarzt/poster-desktop.webp" alt="" fetchpriority="high" />
+    </picture>
+    <!-- Reel per Gerät erst via JS verdrahtet (data-src → src): Mobil lädt
+         nie die Desktop-Clips und umgekehrt; spart Daten. -->
+    <video class="cine-vid" data-reel="d" data-src="/videos/zahnarzt/reel-1.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="d" data-src="/videos/zahnarzt/reel-2.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="d" data-src="/videos/zahnarzt/reel-3.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="d" data-src="/videos/zahnarzt/reel-4.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+    <video class="cine-vid" data-reel="m" data-src="/videos/zahnarzt/mobile.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+  </div>
+
+  <div class="cine-inner">
+    <div class="cine-stage">
+      <h1>
+        <span class="h1-sub">{heroBrancheSub}</span>
+        <span class="h1-name">{name}</span>
+        <span class="h1-tag">— {heroBrancheTag.toUpperCase()}{stadt ? ` · ${stadt.toUpperCase()}` : ''} —</span>
+      </h1>
+      <p class="cine-lead">{heroLead}</p>
+
+      <div class="cine-actions">
+        <a href={ctaZiel} class="btn btn-primary">{ctaText}<span class="ico" set:html={I.arrow} /></a>
+        <a href={telHref} class="btn btn-glass"><span class="ico" set:html={I.phone} />Anrufen</a>
+      </div>
+
+      <div class="cine-meta">
+        <a href={telHref}><span class="ico" set:html={I.phone} />{telefon}</a>
+        {oeffnung && <span><span class="ico" set:html={I.clock} />{oeffnung}</span>}
+        {adresse && <span><span class="ico" set:html={I.pin} />{adresse}</span>}
+      </div>
+
+      {bewertungen.length > 0 && (
+        <div class="cine-rating">
+          <span class="stars">{Array.from({ length: 5 }).map(() => <span class="ico" set:html={I.star} />)}</span>
+          <span><b>{bewAvgStr}</b> aus {bewertungen.length} Patientenstimme{bewertungen.length === 1 ? '' : 'n'}</span>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <a href="#vertrauen" class="cine-scroll" aria-label="Weiter — entspannt zum Zahnarzt">
+    <span>Scroll</span><i></i>
+  </a>
+</header>
+
+<!-- [Vertrauen] Assurance Bar — Angst/Kosten zuerst entschärfen, dann erst das Showpiece -->
+<section id="vertrauen" class="assure">
+  <div class="wrap assure-grid">
+    <div class="assure-lead">
+      <span class="eyebrow">{assureKicker}</span>
+      <h2>{assureTitel}</h2>
+      <p>{assureText}</p>
+      <div class="assure-actions">
+        <a href={ctaZiel} class="btn btn-primary">{ctaText}<span class="ico" set:html={I.arrow} /></a>
+        <a href={telHref} class="btn btn-ghost"><span class="ico" set:html={I.phone} />{telefon}</a>
       </div>
     </div>
-    <div class="hero-card">
-      <h3>🗓️ Schnell einen Termin buchen</h3>
-      {adresse && (
-        <div class="info-row"><div class="info-icon">📍</div><span>{adresse}</span></div>
-      )}
-      <div class="info-row"><div class="info-icon">📞</div><span>{telefon}</span></div>
-      {oeffnung && (
-        <div class="info-row"><div class="info-icon">⏰</div><span>{oeffnung}</span></div>
-      )}
-      <div class="info-row"><div class="info-icon">✉️</div><span>{email}</span></div>
-      <a href="#kontakt" style="display: block; background: var(--c-primary); color: white; text-align: center; padding: 0.875rem; border-radius: 10px; font-weight: 600; text-decoration: none; margin-top: 1.25rem;">
-        Jetzt Termin anfragen →
-      </a>
+    <ul class="assure-points">
+      {assure.map((a) => (
+        <li>
+          <span class="ico" set:html={I.check} />
+          <span class="ap-txt"><b>{a.t}</b>{a.d}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<!-- [Story] Tooth Strata — gepinnte, scroll-gekoppelte 3D-Sequenz: der Zahn
+     schwebt & dreht sich, driftet von Seite zu Seite, Text auf der freien
+     Gegenseite. Erzählung folgt der Anatomie (Schmelz → Dentin → Pulpa →
+     Termin). Zum Schluss zieht sich der Zahn zurück (Zoom-out + Fade), der
+     CTA bleibt. Seiten/Bänder = BANDS-Tabelle im Controller-JS.
+     Mobil → senkrecht. Reduced-Motion → entpinnt & gestapelt. -->
+<section class="cinema" id="story">
+  <div class="cinema-track" id="cinemaTrack">
+    <div class="cinema-sticky">
+      <div class="cinema-stage">
+        <div class="cm-shadow" aria-hidden="true"></div>
+        <div class="cm-obj cm-tooth">
+          {hasModel ? (
+            <model-viewer
+              id="toothViewer"
+              src={modelSrc}
+              alt={`3D-Modell eines Zahns — ${name}`}
+              camera-orbit="0deg 76deg 110%"
+              field-of-view="30deg"
+              environment-image="neutral"
+              exposure="1.05"
+              shadow-intensity="0.35"
+              shadow-softness="1"
+              interaction-prompt="none"
+              disable-zoom
+              loading="eager"
+              reveal="auto"
+            ></model-viewer>
+          ) : (
+            <div class="cm-fallback" set:html={I.tooth} />
+          )}
+        </div>
+      </div>
+
+      <div class="cinema-copy">
+        {scenes.map((s, i) => (
+          <article class={`cm-scene${i === 0 ? ' on' : ''}`} data-scene={i}>
+            <span class="eyebrow">{s.eyebrow}</span>
+            <h2>{s.titel}</h2>
+            <p>{s.text}</p>
+            {s.cta && (
+              <a href={ctaZiel} class="btn btn-primary">{ctaText}<span class="ico" set:html={I.arrow} /></a>
+            )}
+          </article>
+        ))}
+      </div>
+
+      <div class="cinema-progress" aria-hidden="true"><i id="cinemaBar"></i></div>
+      <div class="cinema-hint" id="cinemaHint">Scrollen</div>
+    </div>
+  </div>
+</section>
+
+<!-- [Trust] Endless Marquee -->
+<div class="trust">
+  <div class="trust-mask">
+    <div class="trust-track">
+      {trust.map((t) => (
+        <div class="trust-item"><span class="ico" set:html={I.check} />{t}</div>
+      ))}
+      {trust.map((t) => (
+        <div class="trust-item" aria-hidden="true"><span class="ico" set:html={I.check} />{t}</div>
+      ))}
     </div>
   </div>
 </div>
 
-<!-- VERTRAUEN -->
-<section style="padding: 2rem; background: white; border-bottom: 1px solid #f1f5f9;">
-  <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; text-align: center;">
-    {[
-      { val: '15+', label: 'Jahre Erfahrung' },
-      { val: '3.500+', label: 'Zufriedene Patienten' },
-      { val: '4,9 ⭐', label: 'Ø Bewertung' },
-      { val: '0', label: 'Wartezeit mit Termin' },
-    ].map(s => (
-      <div>
-        <div style="font-size: 1.6rem; font-weight: 700; color: var(--c-primary);">{s.val}</div>
-        <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.2rem;">{s.label}</div>
-      </div>
-    ))}
+<!-- [Leistungen] Vertical Reel — Leistungen als auto-cycling Carousel
+     (Komponente: src/components/showcase/VerticalReel.astro). Bilder = Frames
+     aus den Hero-Reels, extrahiert nach src/assets/zahnarzt/clinic-*.webp. -->
+<section id="leistungen" class="leist-sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Leistungen</span>
+      <h2>Zahnmedizin, ruhig und gründlich</h2>
+      <p>Von der Vorsorge bis zur ästhetischen Zahnmedizin — abgestimmt auf das, was Sie wirklich brauchen.</p>
+    </div>
+    <div class="reveal">
+      <VerticalReel items={leistungen} bilder={galDefaults} />
+    </div>
   </div>
 </section>
 
-<!-- LEISTUNGEN -->
-<section id="leistungen">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="section-label">Was wir anbieten</div>
-      <h2 class="section-title">Unsere Leistungen</h2>
-      <p class="section-sub">Von der Vorsorge bis zur kosmetischen Zahnmedizin — alles aus einer Hand.</p>
+<!-- [Team] Portrait Grid -->
+{team.length > 0 && (
+  <section id="team" class="team-sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Praxisteam</span>
+        <h2>Menschen, die sich Zeit nehmen</h2>
+        <p>Erfahren, einfühlsam und stets auf dem aktuellen Stand der Zahnmedizin.</p>
+      </div>
+      <div class="team-grid">
+        {team.map((t, i) => {
+          const bild = clientImage(slug, t.bild) ?? (isShowcase ? teamDefaults[i] ?? null : null);
+          return (
+            <div class="team-card">
+              <div class="avatar" style={bild ? '' : `background: ${palette[i % palette.length]};`}>
+                {bild ? <Image src={bild} alt={t.name} width={96} height={96} /> : initialen(t)}
+              </div>
+              <h3>{t.name}</h3>
+              <p>{t.rolle}</p>
+            </div>
+          );
+        })}
+      </div>
     </div>
-    <div class="grid-3">
-      {leistungen.map(l => (
-        <div class="leistung-card">
-          <div class="leistung-icon">{l.icon}</div>
-          <h3>{l.titel}</h3>
-          <p>{l.text}</p>
+  </section>
+)}
+
+<!-- [Stimmen] Quote Wall -->
+{bewertungen.length > 0 && (
+  <section id="stimmen" class="stimmen-sec">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Patientenstimmen</span>
+        <h2>Was Patientinnen &amp; Patienten sagen</h2>
+        <p>Durchschnittlich {bewAvgStr} von 5 Sternen aus {bewertungen.length} Bewertung{bewertungen.length === 1 ? '' : 'en'}.</p>
+      </div>
+      <div class="bew-grid reveal">
+        {bewertungen.map((b) => (
+          <div class="bew-card">
+            <div class="bew-stars">{Array.from({ length: b.sterne }).map(() => <span class="ico" set:html={I.star} />)}</div>
+            <p>„{b.text}"</p>
+            <div class="bew-name">{b.name}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<!-- [Scorecard] Self-Check — interaktiver Lead-Magnet (Priestley/ScoreApp-Methodik) -->
+<section id="check" class="sc">
+  <div class="wrap">
+    <div class="sc-card" data-sc>
+      <div class="sc-progress" aria-hidden="true"><i></i></div>
+
+      <div class="sc-step" data-step="intro">
+        <span class="eyebrow">{sc.kicker}</span>
+        <h2>{sc.titel}</h2>
+        <p class="sc-intro">{sc.intro}</p>
+        <ul class="sc-meta">{sc.meta.map((m) => <li>{m}</li>)}</ul>
+        <button type="button" class="btn btn-primary sc-start">{sc.startLabel}<span class="ico" set:html={I.arrow} /></button>
+        <p class="sc-note">{sc.note}</p>
+      </div>
+
+      {sc.fragen.map((f, i) => (
+        <div class="sc-step sc-q" data-step={`q${i}`} hidden>
+          <div class="sc-qhead"><span class="sc-count">Frage {i + 1} / {sc.fragen.length}</span></div>
+          <h3>{f.q}</h3>
+          <div class="sc-opts">
+            {f.a.map((o) => (
+              <button type="button" class="sc-opt" data-points={o.p}>{o.t}</button>
+            ))}
+          </div>
+          <button type="button" class="sc-back" data-back>← Zurück</button>
         </div>
       ))}
-    </div>
-  </div>
-</section>
 
-<!-- TEAM -->
-<section id="team" class="team-bg">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="section-label">Wir sind für Sie da</div>
-      <h2 class="section-title">Unser Team</h2>
-      <p class="section-sub">Erfahren, einfühlsam und stets auf dem neuesten Stand der Zahnmedizin.</p>
-    </div>
-    <div class="grid-4">
-      {team.map((t, i) => {
-        const bild = clientImage(slug, t.bild);
-        return (
-          <div class="team-card">
-            <div class="avatar" style={bild ? '' : `background: ${palette[i % palette.length]};`}>
-              {bild ? <Image src={bild} alt={t.name} width={72} height={72} /> : initialen(t)}
-            </div>
-            <h3>{t.name}</h3>
-            <p>{t.rolle}</p>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-</section>
-
-<!-- BEWERTUNGEN -->
-<section id="bewertungen">
-  <div class="section-inner">
-    <div class="section-header">
-      <div class="section-label">Was Patienten sagen</div>
-      <h2 class="section-title">Bewertungen</h2>
-      <p class="section-sub">Über 200 Bewertungen mit durchschnittlich 4,9 von 5 Sternen.</p>
-    </div>
-    <div class="grid-bewertungen">
-      {bewertungen.map(b => (
-        <div class="bew-card">
-          <div class="sterne">{'★'.repeat(b.sterne)}</div>
-          <p>„{b.text}"</p>
-          <div class="bew-name">— {b.name}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
-<!-- KONTAKT -->
-<section id="kontakt" class="kontakt-bg">
-  <div class="section-inner">
-    <div class="kontakt-grid">
-      <div>
-        <h2>Termin vereinbaren</h2>
-        <p>Rufen Sie uns an oder schreiben Sie uns — wir melden uns innerhalb von 24 Stunden bei Ihnen.</p>
-        <div style="display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 2rem;">
-          <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-            <span style="font-size: 1.2rem;">📞</span> {telefon}
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-            <span style="font-size: 1.2rem;">✉️</span> {email}
-          </div>
-          {adresse && (
-            <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-              <span style="font-size: 1.2rem;">📍</span> {adresse}
-            </div>
-          )}
-          {oeffnung && (
-            <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
-              <span style="font-size: 1.2rem;">⏰</span> {oeffnung}
-            </div>
-          )}
-        </div>
+      <div class="sc-step sc-form" data-step="lead" hidden>
+        <span class="eyebrow">Fast geschafft</span>
+        <h3>{sc.leadTitel}</h3>
+        <p class="sc-intro">{sc.leadSub}</p>
+        <div class="sc-field"><label for="sc-name">Name</label><input id="sc-name" class="sc-in" type="text" data-req="name" autocomplete="name" /></div>
+        <div class="sc-field"><label for="sc-mail">E-Mail</label><input id="sc-mail" class="sc-in" type="email" data-req="email" autocomplete="email" /></div>
+        <div class="sc-field"><label for="sc-tel">Telefon (optional)</label><input id="sc-tel" class="sc-in" type="tel" autocomplete="tel" /></div>
+        <p class="sc-err" data-err hidden>Bitte Namen und eine gültige E-Mail-Adresse angeben.</p>
+        <button type="button" class="btn btn-primary sc-reveal">Mein Ergebnis ansehen<span class="ico" set:html={I.arrow} /></button>
+        <p class="sc-note">Demo-Formular — Eingaben werden nicht übertragen oder gespeichert.</p>
       </div>
-      <div>
-        <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 2rem;">
-          <h3 style="color: white; font-weight: 600; margin-bottom: 1.25rem;">Terminanfrage</h3>
-          <div class="form-group">
-            <input type="text" placeholder="Ihr Name" />
-          </div>
-          <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <input type="tel" placeholder="Telefon" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 0.9rem;" />
-            <input type="email" placeholder="E-Mail" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 0.9rem;" />
-          </div>
-          <div class="form-group">
-            <select style="width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: rgba(255,255,255,0.8); font-size: 0.9rem; font-family: inherit;">
-              <option value="">Gewünschte Leistung</option>
-              <option>Professionelle Reinigung</option>
-              <option>Bleaching</option>
-              <option>Implantologie</option>
-              <option>Zahnersatz</option>
-              <option>Notfallbehandlung</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <textarea rows="3" placeholder="Ihre Nachricht (optional)" style="width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 0.9rem; font-family: inherit; resize: vertical;"></textarea>
-          </div>
-          <button class="form-btn">Terminanfrage senden →</button>
+
+      <div class="sc-step sc-result" data-step="result" hidden>
+        <span class="eyebrow">Ihr Ergebnis</span>
+        <div class="sc-score"><b data-score>0</b><span>von 100 Punkten</span></div>
+        <div class="sc-tierbadge" data-tierlabel>—</div>
+        <p class="sc-tiermsg" data-tiermsg></p>
+        <a href={ctaZiel} class="btn btn-primary sc-cta">{ctaText}<span class="ico" set:html={I.arrow} /></a>
+        <button type="button" class="sc-restart" data-restart>Check neu starten</button>
+        <div class="sc-tiers" hidden>
+          {sc.tiers.map((t) => (
+            <div class="sc-tier" data-min={t.min} data-label={t.label}>{t.msg}</div>
+          ))}
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
+<!-- [Kontakt] Split Form -->
+<section id="kontakt" class="kontakt-sec">
+  <div class="wrap kontakt-grid">
+    <div class="kontakt-info">
+      <span class="eyebrow">Kontakt</span>
+      <h2>Termin vereinbaren</h2>
+      <p>Rufen Sie uns an oder schreiben Sie uns — wir melden uns innerhalb von 24 Stunden. Angst vor der Behandlung? Sagen Sie es uns einfach im Nachrichtenfeld, wir richten uns danach.</p>
+      <div class="kontakt-list">
+        <a href={telHref}><span class="ico" set:html={I.phone} />{telefon}</a>
+        <a href={`mailto:${email}`}><span class="ico" set:html={I.mail} />{email}</a>
+        {adresse && <div><span class="ico" set:html={I.pin} />{adresse}</div>}
+        {oeffnung && <div><span class="ico" set:html={I.clock} />{oeffnung}</div>}
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h3>Terminanfrage</h3>
+      <div class="field">
+        <label for="k-name">Name</label>
+        <input id="k-name" type="text" placeholder="Ihr Name" />
+      </div>
+      <div class="field field-row">
+        <div>
+          <label for="k-tel">Telefon</label>
+          <input id="k-tel" type="tel" placeholder="Telefonnummer" />
+        </div>
+        <div>
+          <label for="k-mail">E-Mail</label>
+          <input id="k-mail" type="email" placeholder="E-Mail-Adresse" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="k-leistung">Anliegen</label>
+        <select id="k-leistung">
+          <option value="">Bitte wählen</option>
+          {leistungen.map((l) => <option>{l.titel}</option>)}
+          <option>Notfallbehandlung</option>
+          <option>Ich bin Angstpatient:in</option>
+          <option>Sonstiges</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="k-msg">Nachricht (optional)</label>
+        <textarea id="k-msg" placeholder="Ihre Nachricht"></textarea>
+      </div>
+      <button type="button" class="btn btn-primary">Anfrage senden<span class="ico" set:html={I.arrow} /></button>
+      <p class="form-note">Wir verwenden Ihre Daten ausschließlich zur Beantwortung Ihrer Anfrage.</p>
+    </div>
+  </div>
+</section>
+
+<!-- [Footer] Minimal -->
 <footer>
-  <p>{name}{adresse ? ` | ${adresse}` : ''} | {telefon}</p>
-  <p style="margin-top: 0.5rem;">
-    <a href="#">Impressum</a> · <a href="#">Datenschutz</a> · <a href="#">Barrierefreiheit</a>
-  </p>
-  <p style="margin-top: 0.75rem; font-size: 0.72rem; opacity: 0.5;">
-    Demo-Website erstellt von <a href="/" style="color: var(--c-primary);">Blue Ocean Marketing</a>
-  </p>
+  <div class="wrap">
+    <div class="foot-inner">
+      <div><strong style="color:var(--ink);">{name}</strong>{adresse ? ` · ${adresse}` : ''} · {telefon}</div>
+      <div class="foot-links">
+        <a href="#">Impressum</a>
+        <a href="#">Datenschutz</a>
+        <a href="#">Barrierefreiheit</a>
+      </div>
+      <div class="foot-credit">
+        Demo-Website von <a href="/">Blue Ocean Marketing</a> — Inhalte &amp; Bilder sind Platzhalter.
+        {hasModel && ` ${modelCredit}`}
+      </div>
+    </div>
+  </div>
 </footer>
+
+<script>
+  (function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Scroll-Reveal beim Eintreten */
+    var els = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      els.forEach(function (e) { e.classList.add('in'); });
+    } else {
+      var io = new IntersectionObserver(function (ents) {
+        ents.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+        });
+      }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+      els.forEach(function (e) { io.observe(e); });
+    }
+
+    /* [Hero] Praxis Reel — Geräte-Reel + Crossfade.
+       Reduced-Motion oder Save-Data → gar kein Video, Poster bleibt stehen. */
+    (function () {
+      var cine = document.querySelector('.cine');
+      if (!cine) return;
+      var conn = navigator.connection || {};
+      if (reduce || conn.saveData === true) return;
+
+      var sel = window.matchMedia('(max-width: 767px)').matches ? 'm' : 'd';
+      var vids = [];
+      [].slice.call(cine.querySelectorAll('.cine-vid')).forEach(function (v) {
+        if (v.getAttribute('data-reel') === sel) vids.push(v);
+        else if (v.parentNode) v.parentNode.removeChild(v);
+      });
+      if (!vids.length) return;
+      vids.forEach(function (v) { v.src = v.getAttribute('data-src'); v.load(); });
+
+      function play(v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+
+      if (vids.length === 1) {
+        vids[0].loop = true;
+        vids[0].classList.add('on');
+        play(vids[0]);
+        return;
+      }
+
+      var i = 0, switching = false;
+      function show(n) { vids[n].classList.add('on'); vids[n].currentTime = 0; play(vids[n]); }
+      function advance() {
+        if (switching) return;
+        switching = true;
+        var prev = vids[i];
+        i = (i + 1) % vids.length;
+        show(i);
+        setTimeout(function () {
+          prev.classList.remove('on'); prev.pause();
+          switching = false;
+        }, 1200);
+      }
+      vids.forEach(function (v) {
+        v.addEventListener('timeupdate', function () {
+          if (v === vids[i] && v.duration && v.currentTime >= v.duration - 1.0) advance();
+        });
+        v.addEventListener('ended', function () { if (v === vids[i]) advance(); });
+      });
+      show(0);
+    })();
+
+    /* ─────────── [Story] Tooth Strata — eine scroll-gekoppelte Sequenz ───────────
+       Die Bewegung lebt komplett im JS: .cm-tooth wird per transform durchs
+       Bild geschoben (Drift + leichtes Schweben), die model-viewer-Kamera per
+       cameraOrbit gedreht (Dauer-Spin + an die Strecke gekoppelte Facetten).
+       Ohne model-viewer (Fallback-Zahn) wandert der Container trotzdem mit.
+       Gestapelt (Reduced-Motion) → .is-static, Kamera steht ruhig. */
+    (function () {
+      var cinema = document.querySelector('.cinema');
+      if (!cinema) return;
+
+      var track   = document.getElementById('cinemaTrack');
+      var bar     = document.getElementById('cinemaBar');
+      var hint    = document.getElementById('cinemaHint');
+      var toothBox = cinema.querySelector('.cm-tooth');
+      var shadow  = cinema.querySelector('.cm-shadow');
+      var tooth   = document.getElementById('toothViewer');
+      var scenes  = [].slice.call(cinema.querySelectorAll('.cm-scene'));
+      var N = scenes.length || 1;
+      if (!track) return;
+
+      function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      /* smoothstep — weiches Ein-/Ausgleiten (kein Rollen wie beim Golfball,
+         der Zahn driftet ruhig wie ein untersuchtes Präparat). */
+      function smooth(a, b, t) { t = clamp(t, 0, 1); t = t * t * (3 - 2 * t); return a + (b - a) * t; }
+
+      /* Choreografie-Tabelle: je Szene Scroll-Band [a,b], Ein-/Ausblend-
+         Zonen (fi/fo) und feste Seite. Reihenfolge der Seiten ergibt das
+         sichtbare Hin-und-Her (links → rechts → links). EINZIGE Wahrheit
+         für „welche Szene wann/wo" — Zahn-Bahn in render() darauf
+         abgestimmt (rechts → links → rechts → Rückzug). */
+      var BANDS = [
+        { a: 0.00, b: 0.15, fi: 0.00, fo: 0.05, side: 'left'  },  /* Zahn parkt rechts   */
+        { a: 0.30, b: 0.46, fi: 0.05, fo: 0.05, side: 'right' },  /* Zahn ist links      */
+        { a: 0.58, b: 0.71, fi: 0.04, fo: 0.04, side: 'left'  },  /* Zahn zurück rechts  */
+        { a: 0.73, b: 0.86, fi: 0.04, fo: 0.04, side: 'left'  },  /* Zahn ruht rechts    */
+        { a: 0.88, b: 1.01, fi: 0.05, fo: 0.00, side: 'left'  }   /* CTA, Zahn zieht sich zurück */
+      ];
+      function bandOpacity(p, B) {
+        if (p < B.a || p > B.b) return 0;
+        if (B.fi > 0 && p < B.a + B.fi) return (p - B.a) / B.fi;
+        if (B.fo > 0 && p > B.b - B.fo) return clamp((B.b - p) / B.fo, 0, 1);
+        return 1;
+      }
+      /* Seite einmalig als CSS-Klasse setzen (CSS ankert left/right) */
+      scenes.forEach(function (s, i) {
+        s.classList.remove('on');
+        s.classList.add('side-' + ((BANDS[i] && BANDS[i].side) || 'left'));
+      });
+
+      /* Kamera nur setzen, wenn model-viewer wirklich da & bereit ist */
+      function orbit(el, theta, phi, rad) {
+        if (!el || !el.jumpCameraToGoal) return;
+        el.cameraOrbit = theta.toFixed(1) + 'deg ' + phi.toFixed(1) + 'deg ' + rad.toFixed(0) + '%';
+        el.jumpCameraToGoal();
+      }
+
+      /* Position 0..1 → Zahn-Choreografie.
+         spin = fortlaufender Zeit-Winkel (Zahn dreht auch im Stand weiter). */
+      function render(p, spin) {
+        p = clamp(p, 0, 1);
+        var mobile = cinema.classList.contains('is-mobilecine');
+        var bo = 1, sc = 1, rad, drift = 0;
+
+        if (!mobile) {
+          /* ── DESKTOP — ZAHN: parkt rechts → driftet nach links → parkt links
+             → driftet zurück nach rechts → ruht → zieht sich am Ende zurück
+             (Zoom-out + Fade). x in vw (0 = Mitte). */
+          var bx;
+          rad = 110;
+          if (p < 0.15) {                       /* geparkt rechts (Hero, Szene 0) */
+            bx = 26;
+          } else if (p < 0.30) {                /* driftet rechts → links */
+            var r1 = (p - 0.15) / 0.15;
+            bx = smooth(26, -26, r1);
+            drift = Math.sin(r1 * Math.PI);
+          } else if (p < 0.46) {                /* geparkt links (Szene 1) */
+            bx = -26;
+          } else if (p < 0.58) {                /* driftet links → rechts (zurück) */
+            var r2 = (p - 0.46) / 0.12;
+            bx = smooth(-26, 26, r2);
+            drift = Math.sin(r2 * Math.PI);
+          } else if (p < 0.82) {                /* ruht rechts (Szene 2 & 3) */
+            bx = 26;
+          } else {                              /* FINALE: zieht sich zurück & löst sich auf */
+            var r3 = (p - 0.82) / 0.18;
+            bx = 26;
+            rad = lerp(110, 188, r3);                               /* Kamera weg → Zahn kleiner */
+            sc  = lerp(1, 0.74, r3);
+            bo  = clamp(1 - (p - 0.86) / 0.14, 0, 1);
+          }
+          /* sanftes Schweben: Dauer-Wippe + flacher Bogen während des Drifts */
+          var bob = Math.sin(spin * 0.05) * 2.2 - drift * 4;
+          if (toothBox) {
+            toothBox.style.transform =
+              'translate(calc(-50% + ' + bx.toFixed(2) + 'vw), calc(-50% + ' + bob.toFixed(2) + 'vh)) scale(' + sc.toFixed(3) + ')';
+            toothBox.style.opacity = bo.toFixed(3);
+          }
+          /* Dauer-Spin + an die zurückgelegte Strecke gekoppelter Facetten-
+             wechsel (Richtung dreht das Vorzeichen automatisch), leichte
+             Neigung gegen das Schweben. */
+          orbit(tooth, spin + (26 - bx) * 3.4, clamp(76 - bob * 0.6, 64, 88), rad);
+
+          if (shadow) {
+            shadow.style.transform =
+              'translate(calc(-50% + ' + bx.toFixed(2) + 'vw), calc(-50% + 31vh)) scale(' + (sc * (1 - drift * 0.12)).toFixed(3) + ')';
+            shadow.style.opacity = (bo * 0.45 * (1 - drift * 0.4)).toFixed(3);
+          }
+
+          /* ── SZENEN: feste Seite je Szene, Sichtbarkeit per Scroll-Band.
+             Zahn bei voller Text-Sichtbarkeit immer auf der freien
+             Gegenseite → kein Überlappen, Seiten wechseln sichtbar. */
+          for (var i = 0; i < N; i++) {
+            var B = BANDS[i] || { a: 0, b: 1, fi: 0, fo: 0, side: 'left' };
+            var op = bandOpacity(p, B);
+            var tx = (1 - op) * (B.side === 'right' ? 34 : -34);
+            scenes[i].style.opacity = op.toFixed(3);
+            scenes[i].style.transform = 'translate(' + tx.toFixed(1) + 'px, -50%)';
+          }
+        } else {
+          /* ── MOBIL (hochkant) — gleiche Choreografie, aber SENKRECHT:
+             Zahn parkt oben → driftet runter → parkt unten → driftet hoch →
+             ruht oben → zieht sich am Ende zurück (Fade). y in vh (0 = Mitte). */
+          var TOP = -28, BOT = 22, by;
+          rad = 115;
+          if (p < 0.15) {                       /* geparkt oben (Hero, Szene 0) */
+            by = TOP;
+          } else if (p < 0.30) {                /* driftet oben → unten */
+            var m1 = (p - 0.15) / 0.15;
+            by = smooth(TOP, BOT, m1);
+            drift = Math.sin(m1 * Math.PI);
+          } else if (p < 0.46) {                /* geparkt unten (Szene 1) */
+            by = BOT;
+          } else if (p < 0.58) {                /* driftet unten → oben (zurück) */
+            var m2 = (p - 0.46) / 0.12;
+            by = smooth(BOT, TOP, m2);
+            drift = Math.sin(m2 * Math.PI);
+          } else if (p < 0.82) {                /* ruht oben (Szene 2 & 3) */
+            by = TOP;
+          } else {                              /* FINALE: zieht sich zurück & löst sich auf */
+            var m3 = (p - 0.82) / 0.18;
+            by = TOP;
+            rad = lerp(115, 196, m3);
+            sc  = lerp(1, 0.74, m3);
+            bo  = clamp(1 - (p - 0.86) / 0.14, 0, 1);
+          }
+          var bwob = Math.sin(spin * 0.05) * 1.4;
+          if (toothBox) {
+            toothBox.style.transform =
+              'translate(calc(-50% + ' + bwob.toFixed(2) + 'vw), calc(-50% + ' + by.toFixed(2) + 'vh)) scale(' + sc.toFixed(3) + ')';
+            toothBox.style.opacity = bo.toFixed(3);
+          }
+          orbit(tooth, spin + (by - TOP) * 4, 76, rad);
+
+          if (shadow) {
+            shadow.style.transform =
+              'translate(-50%, calc(-50% + ' + (by + 10).toFixed(2) + 'vh)) scale(' + sc.toFixed(3) + ')';
+            shadow.style.opacity = (bo * 0.35).toFixed(3);
+          }
+
+          /* ── SZENEN: mittig, Text in der zum Zahn gegenüberliegenden
+             Bildhälfte (oben/unten) → kein Überlappen. */
+          for (var j = 0; j < N; j++) {
+            var Bm = BANDS[j] || { a: 0, b: 1, fi: 0, fo: 0, side: 'left' };
+            var opm = bandOpacity(p, Bm);
+            var topZone = (Bm.side === 'right');
+            var ty = (1 - opm) * (topZone ? -26 : 26);
+            scenes[j].style.opacity = opm.toFixed(3);
+            scenes[j].style.transform = 'translate(-50%, ' + ty.toFixed(1) + 'px)';
+          }
+        }
+
+        if (bar)  bar.style.width = (p * 100).toFixed(1) + '%';
+        if (hint) hint.style.opacity = clamp(1 - p * 8, 0, 1);
+      }
+
+      /* ── Modus: gepinnt-cinematisch  vs.  gestapelt-statisch ── */
+      var reduceMM = window.matchMedia('(prefers-reduced-motion: reduce)');
+      var smallMM  = window.matchMedia('(max-width: 880px)');
+      var spin = 0, last = 0, rafId = 0, staticOn = null;
+
+      function scrollP() {
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var span = track.offsetHeight - vh;
+        return span > 0 ? clamp(-track.getBoundingClientRect().top / span, 0, 1) : 0;
+      }
+      function frame(t) {
+        if (!last) last = t;
+        spin += (t - last) / 1000 * 13;                             /* Dauer-Spin ~13°/s */
+        last = t;
+        render(scrollP(), spin);
+        rafId = requestAnimationFrame(frame);
+      }
+      function apply() {
+        /* NUR Reduced-Motion → gestapelt-ruhig (.is-static). Kleine Screens
+           bleiben gepinnt-cinematisch, nur senkrecht (.is-mobilecine). */
+        var stat = reduceMM.matches;
+        if (stat !== staticOn) {
+          staticOn = stat;
+          if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+          last = 0;
+          cinema.classList.toggle('is-static', stat);
+          if (stat) {
+            if (toothBox) { toothBox.style.cssText = ''; }
+            if (shadow)  { shadow.style.cssText = ''; }
+            scenes.forEach(function (s) { s.style.opacity = ''; s.style.transform = ''; });
+            orbit(tooth, 0, 76, 110);
+            if (bar)  bar.style.width = '100%';
+            if (hint) hint.style.opacity = 0;
+          }
+        }
+        if (!stat) {
+          cinema.classList.toggle('is-mobilecine', smallMM.matches);
+          if (!rafId) rafId = requestAnimationFrame(frame);
+        }
+      }
+      function onMM(mm, fn) {
+        if (mm.addEventListener) mm.addEventListener('change', fn);
+        else if (mm.addListener) mm.addListener(fn);
+      }
+
+      function boot() { apply(); }
+
+      /* Erst starten, wenn model-viewer (falls vorhanden) bereit ist — sonst sofort */
+      if (tooth && window.customElements && window.customElements.whenDefined) {
+        window.customElements.whenDefined('model-viewer').then(function () {
+          if (tooth.loaded) boot();
+          else tooth.addEventListener('load', boot, { once: true });
+          setTimeout(function () { if (staticOn === null) boot(); }, 1500);   /* Sicherheitsnetz */
+        });
+      } else {
+        boot();
+      }
+      onMM(reduceMM, apply);
+      onMM(smallMM, apply);
+      window.addEventListener('resize', apply, { passive: true });
+    })();
+  })();
+</script>
+
+<!-- [Scorecard] Controller — DOM-getrieben, dependency-frei, idempotent -->
+<script>
+  (function () {
+    var card = document.querySelector('[data-sc]');
+    if (!card) return;
+    var steps = [].slice.call(card.querySelectorAll('.sc-step'));
+    var order = steps.map(function (s) { return s.getAttribute('data-step'); });
+    var qEls = [].slice.call(card.querySelectorAll('.sc-q'));
+    var bar = card.querySelector('.sc-progress > i');
+    var picks = {};
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function go(name) {
+      steps.forEach(function (s) { s.hidden = (s.getAttribute('data-step') !== name); });
+      var i = order.indexOf(name);
+      if (bar) bar.style.width = Math.round((i / (order.length - 1)) * 100) + '%';
+      try { card.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }
+      catch (e) { card.scrollIntoView(); }
+    }
+    function step(from, dir) {
+      var i = order.indexOf(from);
+      go(order[Math.max(0, Math.min(order.length - 1, i + dir))]);
+    }
+
+    card.querySelectorAll('.sc-start').forEach(function (b) {
+      b.addEventListener('click', function () { go(order[1]); });
+    });
+    qEls.forEach(function (q) {
+      var key = q.getAttribute('data-step');
+      q.querySelectorAll('.sc-opt').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          q.querySelectorAll('.sc-opt').forEach(function (o) { o.classList.remove('is-sel'); });
+          opt.classList.add('is-sel');
+          picks[key] = parseFloat(opt.getAttribute('data-points')) || 0;
+          step(key, 1);
+        });
+      });
+    });
+    card.querySelectorAll('[data-back]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        step(b.closest('.sc-step').getAttribute('data-step'), -1);
+      });
+    });
+
+    function valid() {
+      var n = card.querySelector('[data-req="name"]');
+      var m = card.querySelector('[data-req="email"]');
+      return n && n.value.trim().length > 1 &&
+             m && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m.value.trim());
+    }
+    card.querySelectorAll('.sc-reveal').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var err = card.querySelector('[data-err]');
+        if (!valid()) { if (err) err.hidden = false; return; }
+        if (err) err.hidden = true;
+        var max = 0, got = 0;
+        qEls.forEach(function (q) {
+          var pts = [].slice.call(q.querySelectorAll('.sc-opt')).map(function (o) {
+            return parseFloat(o.getAttribute('data-points')) || 0;
+          });
+          max += Math.max.apply(null, pts.concat([0]));
+          got += picks[q.getAttribute('data-step')] || 0;
+        });
+        var pct = max > 0 ? Math.round((got / max) * 100) : 0;
+        var tiers = [].slice.call(card.querySelectorAll('.sc-tier')).sort(function (a, b2) {
+          return (+a.getAttribute('data-min')) - (+b2.getAttribute('data-min'));
+        });
+        var tier = tiers[0];
+        tiers.forEach(function (t) { if (pct >= (+t.getAttribute('data-min'))) tier = t; });
+        var sEl = card.querySelector('[data-score]'); if (sEl) sEl.textContent = pct;
+        var lEl = card.querySelector('[data-tierlabel]'); if (lEl && tier) lEl.textContent = tier.getAttribute('data-label');
+        var mEl = card.querySelector('[data-tiermsg]'); if (mEl && tier) mEl.textContent = tier.textContent;
+        go('result');
+      });
+    });
+    card.querySelectorAll('[data-restart]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        picks = {};
+        card.querySelectorAll('.sc-opt.is-sel').forEach(function (o) { o.classList.remove('is-sel'); });
+        card.querySelectorAll('.sc-in').forEach(function (i) { i.value = ''; });
+        var err = card.querySelector('[data-err]'); if (err) err.hidden = true;
+        go('intro');
+      });
+    });
+  })();
+</script>
+
+<!-- [Sticky] Mobile CTA Bar — Anrufen + WhatsApp. Erscheint erst nach dem Hero. -->
+<aside class="sticky-cta" data-sticky-cta aria-label="Schneller Kontakt">
+  <a href={telHref} class="sticky-cta-btn sticky-cta-call">
+    <span class="ico" set:html={I.phone} />
+    <span>Anrufen</span>
+  </a>
+  <a href={waHref} class="sticky-cta-btn sticky-cta-wa" target="_blank" rel="noopener">
+    <span class="ico" set:html={I.whatsapp} />
+    <span>WhatsApp</span>
+  </a>
+</aside>
+
+<script>
+  (function () {
+    var bar = document.querySelector('[data-sticky-cta]');
+    var hero = document.querySelector('.cine');
+    if (!bar || !hero) return;
+    if (!('IntersectionObserver' in window)) {
+      bar.setAttribute('data-visible', 'true');
+      return;
+    }
+    var io = new IntersectionObserver(function (ents) {
+      ents.forEach(function (en) {
+        if (en.isIntersecting) bar.removeAttribute('data-visible');
+        else bar.setAttribute('data-visible', 'true');
+      });
+    }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' });
+    io.observe(hero);
+  })();
+</script>
 
 </body>
 </html>

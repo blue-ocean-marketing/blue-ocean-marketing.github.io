@@ -14,6 +14,7 @@
   },
   "kontakt": {
     "adresse": "Musterstraße 1, 75172 Pforzheim",
+    "stadt": "Pforzheim",
     "telefon": "07231 / 000 000",
     "email": "info@beispielpraxis.de",
     "oeffnung": "Mo–Fr 8:00–18:00 Uhr",

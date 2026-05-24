@@ -11,3 +11,11 @@ clients/*.json
 !clients/beispielkunde.json
 src/assets/clients/*
 !src/assets/clients/.gitkeep
+
+# Interne Dokumentation & Methodik — nie ins öffentliche Repo
+# Enthält sensible Infos (VPS-IPs, Schwester-Systeme, Sales-Playbooks, Business-IP)
+CLAUDE.md
+template-formula.md
+zielgruppen.md
+conversion-playbook.md
+scoreapp.md

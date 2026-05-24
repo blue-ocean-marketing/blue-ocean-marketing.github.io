@@ -1,5 +1,18 @@
 ---
 import Base from '../../layouts/Base.astro';
+import VerticalReel from '../../components/showcase/VerticalReel.astro';
+
+// Vorschau für [Showcase] Vertical Reel — leiht sich Kosmetik-Studio-Bilder.
+const reelGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/kosmetik/clinic-*.webp', { eager: true });
+const reelImgs = Object.keys(reelGlob).sort().map((k) => reelGlob[k].default);
+const reelItems = [
+  { icon: '💆', titel: 'Gesichtsbehandlung', text: 'Reinigung, Peeling, Maske, Massage — die Wohlfühl-Basis und Pflege-Diagnostik in einem.', preis: 'ab 79 €', dauer: '60 Min.' },
+  { icon: '✨', titel: 'Microneedling', text: 'Bei unebener Hautstruktur, Akne-Narben, müder Haut. Spürbar nach 2–3 Sitzungen.', preis: 'ab 149 €', dauer: '75 Min.', hot: true },
+  { icon: '💉', titel: 'Hyaluron-Filler', text: 'Sanfte Konturen — natürlich, nicht maskenhaft. Immer mit Erstgespräch.', preis: 'ab 199 €', dauer: '45 Min.', hot: true },
+  { icon: '🌿', titel: 'Intensiv-Peeling', text: 'Bei Pigmentflecken, ungleichmäßigem Teint, Anti-Aging. 3–4 Sitzungen.', preis: 'ab 89 €', dauer: '50 Min.' },
+  { icon: '👁️', titel: 'Wimpernverlängerung', text: 'Natürlich oder volumig — wir empfehlen, was zu Ihrem Augenform passt.', preis: 'ab 89 €', dauer: '90 Min.' },
+  { icon: '🌸', titel: 'Braut-Package', text: 'Probetermin 6 Wochen vorher, Hauptbehandlung + Notfall-Plan.', preis: 'ab 299 €', dauer: '3 Std.' },
+];
 ---
 <Base title="Komponenten-Bibliothek — Blue Ocean Marketing">
 
@@ -27,7 +40,7 @@ import Base from '../../layouts/Base.astro';
 ════════════════════════════════════════════════════════════════ -->
 <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem 1.5rem; display: flex; align-items: baseline; gap: 1.25rem;">
   <h2 style="font-size: 1.1rem; font-weight: 700; color: #e2e8f0; margin: 0;">Hero Sektionen</h2>
-  <span style="font-size: 0.8rem; color: #334155;">4 Varianten</span>
+  <span style="font-size: 0.8rem; color: #334155;">5 Varianten</span>
   <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.07);"></div>
 </div>
 
@@ -177,7 +190,7 @@ import Base from '../../layouts/Base.astro';
 
       <div data-nf="badge" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); padding: 0.3rem 0.875rem; border-radius: 100px; margin-bottom: 1.75rem; backdrop-filter: blur(8px); background: rgba(255,255,255,0.05);">
         <span style="width: 6px; height: 6px; background: #00d4ff; border-radius: 50%; box-shadow: 0 0 8px #00d4ff; flex-shrink: 0;"></span>
-        Studio Lumière · Kosmetik &amp; Ästhetik
+        Aura Beauty Studio · Kosmetik &amp; Ästhetik
       </div>
 
       <h1 data-nf="title" style="font-size: clamp(2.8rem, 6.5vw, 5.5rem); font-weight: 700; line-height: 1.05; color: #ffffff; margin: 0 0 1.5rem; letter-spacing: -0.025em;">
@@ -372,6 +385,58 @@ import Base from '../../layouts/Base.astro';
 
 
 <!-- ═══════════════════════════════════════════════════════════
+     [Hero] Open Course
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #1d6f42; background: rgba(29,111,66,0.12); border: 1px solid rgba(29,111,66,0.3); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Hero] Open Course</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 500px;">Vollbild-Video-Hero: nahtlos crossfadende Hintergrund-Clips (web-optimiert, stumm, autoplay). Pro Gerät anderes Reel — Mobil lädt ein Hochformat-Video statt der Desktop-Clips. Reduced-Motion &amp; Save-Data fallen sauber auf ein Standbild zurück.</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Golf', 'Hotel & Resort', 'Sportverein', 'Eventlocation', 'Premium-Brand'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+    <a href="/golf/" style="flex-shrink: 0; align-self: center; background: rgba(29,111,66,0.14); color: #4ade80; border: 1px solid rgba(29,111,66,0.35); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">Live ansehen →</a>
+  </div>
+
+  <!-- [Hero] Open Course — PREVIEW (Poster-Standbild statt Live-Video) -->
+  <section style="position: relative; min-height: 78vh; display: flex; align-items: flex-end; overflow: hidden; background: #12211a; font-family: 'Space Grotesk', system-ui, sans-serif;">
+    <img src="/videos/golf/poster-desktop.webp" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;" />
+    <div style="position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse 58% 58% at 82% 14%, rgba(29,111,66,0.26) 0%, transparent 60%), linear-gradient(to top, rgba(8,16,11,0.88) 0%, rgba(8,16,11,0.30) 46%, rgba(8,16,11,0.18) 100%), linear-gradient(to right, rgba(8,16,11,0.58) 0%, rgba(8,16,11,0.12) 60%, transparent 100%);"></div>
+
+    <div style="position: relative; z-index: 2; width: 100%; max-width: 1140px; margin: 0 auto; padding: clamp(3rem,8vw,6rem) clamp(1.5rem,5vw,3rem) clamp(3.5rem,7vw,5.5rem);">
+      <div style="max-width: 40rem;">
+        <span style="display: inline-block; font-size: 0.73rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #fff; background: rgba(29,111,66,0.6); padding: 0.36rem 0.9rem; border-radius: 100px;">Golfclub · Pforzheim</span>
+        <h1 style="color: #fff; font-size: clamp(2.4rem,6.4vw,4.6rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.12; margin: 1.1rem 0; max-width: 18ch;">Mehr Spiel. Weniger Drumherum.</h1>
+        <p style="color: rgba(255,255,255,0.82); font-size: clamp(1rem,1.5vw,1.15rem); line-height: 1.7; max-width: 34rem; margin: 0;">Ein gepflegter Platz in Pforzheim, kurze Wege und ein Team, das Golf einfach macht — vom ersten Abschlag bis zum letzten Putt.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 2.1rem;">
+          <a href="#" style="display: inline-flex; align-items: center; gap: 0.55rem; background: #1d6f42; color: #fff; padding: 0.85rem 1.6rem; border-radius: 100px; font-size: 0.95rem; font-weight: 600; text-decoration: none; min-height: 48px;">Schnupperrunde anfragen
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#" style="display: inline-flex; align-items: center; gap: 0.55rem; background: rgba(255,255,255,0.10); color: #fff; padding: 0.85rem 1.6rem; border-radius: 100px; font-size: 0.95rem; font-weight: 600; text-decoration: none; min-height: 48px; border: 1.5px solid rgba(255,255,255,0.34); backdrop-filter: blur(8px);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+            Anrufen
+          </a>
+        </div>
+        <div style="display: inline-flex; align-items: center; gap: 0.6rem; margin-top: 1.6rem; font-size: 0.92rem; color: rgba(255,255,255,0.72);">
+          <span style="display: inline-flex; gap: 1px; color: #fff;">{'★★★★★'.split('').map(() => <span>★</span>)}</span>
+          <span><b style="color:#fff;">4,7</b> aus 3 Mitgliederstimmen</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 50%; bottom: 1.3rem; transform: translateX(-50%); z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; color: rgba(255,255,255,0.72); font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase;">
+      <span>Scroll</span>
+      <i style="display: block; width: 1px; height: 34px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.85));"></i>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
      SECTION HEADING: VIDEO
 ════════════════════════════════════════════════════════════════ -->
 <div style="max-width: 1200px; margin: 3rem auto 0; padding: 0 2rem 1.5rem; display: flex; align-items: baseline; gap: 1.25rem;">
@@ -411,6 +476,90 @@ import Base from '../../layouts/Base.astro';
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b08d57" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         Wohnung finden
       </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION HEADING: 3D & INTERAKTIV
+════════════════════════════════════════════════════════════════ -->
+<div style="max-width: 1200px; margin: 3rem auto 0; padding: 0 2rem 1.5rem; display: flex; align-items: baseline; gap: 1.25rem;">
+  <h2 style="font-size: 1.1rem; font-weight: 700; color: #e2e8f0; margin: 0;">3D &amp; Interaktiv</h2>
+  <span style="font-size: 0.8rem; color: #334155;">1 Variante</span>
+  <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.07);"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     [Story] Fairway Cinema
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #1d6f42; background: rgba(29,111,66,0.12); border: 1px solid rgba(29,111,66,0.3); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Story] Fairway Cinema</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 540px;">Gepinnte Kino-Sequenz mit Seitenwechsel aus zwei selbst gehosteten 3D-Modellen (glTF via &lt;model-viewer&gt;): der Ball parkt rechts (Hero) und ROLLT beim Scrollen quer nach links raus (Spin an den Weg gekoppelt + Bodenschatten), der Text springt dabei auf die freie Gegenseite; danach übergibt er an den Schläger, der von rechts hereinkommt und durchschwingt. Objekt & Text nie auf derselben Seite (kein Überlappen), Fortschrittsbalken unten. Mobil / Reduced-Motion → entpinnt, gestapelt, ruhige Kamera. Fallback-sicher.</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Golf', 'Produkt-Story', 'Manufaktur', 'Prozess', 'Case Study'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+    <a href="/golf/#story" style="flex-shrink: 0; align-self: center; background: rgba(29,111,66,0.14); color: #4ade80; border: 1px solid rgba(29,111,66,0.35); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">Live ansehen →</a>
+  </div>
+
+  <!-- [Story] Fairway Cinema — PREVIEW (Standbild von Szene 1; Live-Scroll-3D auf /golf/) -->
+  <section style="position: relative; min-height: 64vh; overflow: hidden; background: #12211a; display: flex; align-items: center; font-family: 'Space Grotesk', system-ui, sans-serif;">
+    <div style="position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 58% 56% at 70% 42%, rgba(29,111,66,0.26) 0%, transparent 62%), radial-gradient(ellipse 95% 70% at 50% 122%, rgba(6,12,9,0.65) 0%, transparent 60%);"></div>
+    <!-- Ball — rechte Bildhälfte (wie Szene 1 live) -->
+    <div style="position: absolute; top: 50%; right: 4%; transform: translateY(-50%); width: clamp(180px, 30vw, 360px); aspect-ratio: 1; border-radius: 50%; z-index: 1; background: radial-gradient(circle at 36% 32%, #fff 0%, #eef0ec 45%, #cdd3cc 100%); box-shadow: inset -12px -14px 30px rgba(6,12,9,0.4), 0 22px 44px rgba(0,0,0,0.45);"></div>
+    <!-- Copy — links, immer frei -->
+    <div style="position: relative; z-index: 2; max-width: 30rem; padding: 3rem clamp(1.5rem, 6vw, 5rem);">
+      <span style="font-size: 0.72rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #6fcf97;">Golfclub · Pforzheim</span>
+      <h2 style="color: #fff; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; line-height: 1.12; letter-spacing: -0.025em; margin: 0.6rem 0 0.9rem;">Vom ersten Abschlag an.</h2>
+      <p style="color: rgba(246,246,241,0.66); font-size: 1.02rem; line-height: 1.7; margin: 0;">Ein gepflegter Platz, kurze Wege und ein Team, das Golf einfach macht — vom Tee bis zum letzten Putt.</p>
+      <a href="/golf/#story" style="display: inline-flex; align-items: center; gap: 0.55rem; margin-top: 1.6rem; background: #1d6f42; color: #fff; padding: 0.85rem 1.6rem; border-radius: 100px; font-size: 0.95rem; font-weight: 600; text-decoration: none; min-height: 48px;">Schnupperrunde anfragen
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; height: 3px; background: rgba(246,246,241,0.12);"><i style="display: block; height: 100%; width: 20%; background: #1d6f42;"></i></div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION HEADING: SHOWCASE / CAROUSELS
+════════════════════════════════════════════════════════════════ -->
+<div style="max-width: 1200px; margin: 3rem auto 0; padding: 0 2rem 1.5rem; display: flex; align-items: baseline; gap: 1.25rem;">
+  <h2 style="font-size: 1.1rem; font-weight: 700; color: #e2e8f0; margin: 0;">Showcase &amp; Carousels</h2>
+  <span style="font-size: 0.8rem; color: #334155;">1 Variante</span>
+  <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.07);"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     [Showcase] Vertical Reel
+════════════════════════════════════════════════════════════════ -->
+<div style="margin-bottom: 4px;">
+  <!-- Meta strip -->
+  <div style="background: #0d0d14; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1.25rem 2rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9d4edd; background: rgba(157,78,221,0.12); border: 1px solid rgba(157,78,221,0.3); padding: 0.22rem 0.7rem; border-radius: 100px; margin-bottom: 0.6rem;">[Showcase] Vertical Reel</span>
+      <p style="color: #64748b; font-size: 0.82rem; margin: 0 0 0.625rem; max-width: 540px;">Auto-cycling Carousel: vertikal rotierendes Chip-Wheel links, Bild-Stack rechts mit prev/active/next-Rotation. Click springt zum Item, Hover/Focus pausiert. Akzentfarbe übernimmt das Parent-Template via <code style="background:rgba(255,255,255,0.06); padding:0.05rem 0.35rem; border-radius:4px;">--c-primary</code>. Mobile: Stack statt Split.</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+        {['Kosmetik', 'Physiotherapie', 'Restaurant', 'Hotel', 'Agentur-Services', 'SaaS-Features'].map((t) => (
+          <span style="background: rgba(255,255,255,0.04); color: #475569; font-size: 0.7rem; padding: 0.18rem 0.55rem; border-radius: 5px;">{t}</span>
+        ))}
+      </div>
+    </div>
+    <a href="/kosmetik/#behandlungen" style="flex-shrink: 0; align-self: center; background: rgba(157,78,221,0.14); color: #c77dff; border: 1px solid rgba(157,78,221,0.35); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">Live ansehen →</a>
+  </div>
+
+  <!-- [Showcase] Vertical Reel — PREVIEW -->
+  <section style="position: relative; padding: clamp(2.5rem, 6vw, 5rem) clamp(1rem, 4vw, 3rem); background: #0a0a12; font-family: 'Inter', system-ui, sans-serif;">
+    <div style="max-width: 1200px; margin: 0 auto; --c-primary: #9d4edd;">
+      <VerticalReel items={reelItems} bilder={reelImgs} />
     </div>
   </section>
 </div>

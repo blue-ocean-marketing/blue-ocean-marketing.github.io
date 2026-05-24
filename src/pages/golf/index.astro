@@ -1,0 +1,47 @@
+---
+// Öffentliche Showcase-Seite /golf — speist das Branchen-Template mit Demo-Daten.
+// Einzige Wahrheit für die Optik ist src/templates/golf/GolfTemplate.astro;
+// hier nur die Beispiel-Config (Form: clients/_schema.json).
+import GolfTemplate from '../../templates/golf/GolfTemplate.astro';
+
+const config = {
+  schema_version: 1,
+  slug: 'golf',
+  branche: 'golf',
+  marke: {
+    name: 'Golf Club Pforzheim',
+    slogan: 'Mehr Spiel. Weniger Drumherum.',
+    logo: null,
+    farben: { primary: '#1d6f42', secondary: '#c8b88a', accent: '#16482b' },
+  },
+  kontakt: {
+    adresse: 'Am Fairway 1, 75180 Pforzheim',
+    stadt: 'Pforzheim',
+    telefon: '07231 / 90 88 00',
+    email: 'willkommen@gc-tannenhoehe.de',
+    oeffnung: 'Tägl. ab 8:00 Uhr · Range bis Einbruch der Dunkelheit',
+    instagram: '@gc.tannenhoehe',
+  },
+  leistungen: [
+    { titel: '18-Loch-Platz', text: 'Par-72-Meisterschaftsplatz mit gepflegten Grüns — fair für Einsteiger, fordernd für Geübte.', preis: 'Greenfee ab 65 €', dauer: 'Mo–So' },
+    { titel: 'Mitgliedschaft', text: 'Voll spielberechtigt, ohne Aufnahmegebühr im ersten Jahr. Familien- und Fernmitglied-Tarife verfügbar.', preis: 'ab 1.290 €/Jahr', hot: true },
+    { titel: 'Driving Range', text: 'Überdacht, beleuchtet, mit Abschlagmatten und Naturrasen. Pitching- und Putting-Grün inklusive.', preis: 'Ballkarte ab 4 €' },
+    { titel: 'Golfschule & PROs', text: 'Vom Schnupperkurs bis zur Turniervorbereitung — Einzel- und Gruppentraining mit Videoanalyse.', preis: 'Einzelstunde ab 49 €', dauer: '50 Min.' },
+    { titel: 'Platzreife-Kurs', text: 'In kompakten Modulen zur DGV-Platzreife — Theorie, Technik und Abschlussprüfung auf dem Platz.', preis: '349 € komplett', dauer: '4 Wochen' },
+    { titel: 'Clubhaus & Events', text: 'Restaurant mit Sonnenterrasse, Turnierorganisation und Firmen-Golftage auf Anfrage.', preis: 'Küche tägl. 11–21 Uhr' },
+  ],
+  team: [
+    { name: 'Stefan Bergmann', rolle: 'Head-PRO (PGA)', initialen: 'SB', bild: null },
+    { name: 'Carola Vogt', rolle: 'PRO & Platzreife', initialen: 'CV', bild: null },
+    { name: 'Michael Reuter', rolle: 'Clubmanager', initialen: 'MR', bild: null },
+    { name: 'Anja Lindner', rolle: 'Sekretariat & Startzeiten', initialen: 'AL', bild: null },
+  ],
+  bewertungen: [
+    { name: 'Thomas H.', sterne: 5, text: 'Top gepflegter Platz, nie überlaufen und ein PRO-Team, das wirklich auf einen eingeht. Genau so soll Golf sein.' },
+    { name: 'Birgit S.', sterne: 5, text: 'Als Anfängerin hatte ich Respekt — völlig unbegründet. Der Platzreife-Kurs war klasse und das Clubhaus sehr herzlich.' },
+    { name: 'Klaus-Dieter M.', sterne: 4, text: 'Faire Preise, kurze Startzeiten und eine richtig gute Range. Die Terrasse nach der Runde ist unschlagbar.' },
+  ],
+  meta: { quelle: 'manuell', leadbook_lead_id: null, domain_ist: null, erstellt_am: null, notiz: 'Showcase-Demo' },
+};
+---
+<GolfTemplate config={config} />

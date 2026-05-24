@@ -11,15 +11,19 @@ import { join, resolve } from 'node:path';
 import ZahnarztTemplate from '../../templates/zahnarzt/ZahnarztTemplate.astro';
 import KosmetikTemplate from '../../templates/kosmetik/KosmetikTemplate.astro';
 import ImmobilienTemplate from '../../templates/immobilien/ImmobilienTemplate.astro';
+import GolfTemplate from '../../templates/golf/GolfTemplate.astro';
+import PhysiotherapieTemplate from '../../templates/physiotherapie/PhysiotherapieTemplate.astro';
 
 const TEMPLATES: Record<string, any> = {
   zahnarzt: ZahnarztTemplate,
   kosmetik: KosmetikTemplate,
   immobilien: ImmobilienTemplate,
+  golf: GolfTemplate,
+  physiotherapie: PhysiotherapieTemplate,
 };
 
 export function getStaticPaths() {
-  const unterstuetzt = ['zahnarzt', 'kosmetik', 'immobilien'];
+  const unterstuetzt = ['zahnarzt', 'kosmetik', 'immobilien', 'golf', 'physiotherapie'];
 
   const istGueltig = (c: any): boolean =>
     c &&

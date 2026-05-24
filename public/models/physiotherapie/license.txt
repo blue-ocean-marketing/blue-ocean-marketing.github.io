@@ -1,0 +1,11 @@
+Model Information:
+* title:	Human Spine
+* source:	https://sketchfab.com/3d-models/human-spine-57c71ac4134e40be9506be639a29c9a4
+* author:	Kenzie Leedell-Clarke (https://sketchfab.com/KenzieL-C)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Human Spine" (https://sketchfab.com/3d-models/human-spine-57c71ac4134e40be9506be639a29c9a4) by Kenzie Leedell-Clarke (https://sketchfab.com/KenzieL-C) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

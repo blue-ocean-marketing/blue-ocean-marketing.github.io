@@ -1,6 +1,8 @@
 ---
 // Öffentliche Showcase-Seite /kosmetik — speist das Branchen-Template mit Demo-Daten.
-// Optik-Wahrheit: src/templates/kosmetik/KosmetikTemplate.astro. Hier nur die Beispiel-Config.
+// Optik-Wahrheit: src/templates/kosmetik/KosmetikTemplate.astro. Hier nur die Demo-Config.
+// Form & Felder = clients/_schema.json (LeadBook-Schnittstelle).
+// Inhaltliche Quelle der Copy = zielgruppen.md §5 (Beauty-Studio-Psychologie).
 import KosmetikTemplate from '../../templates/kosmetik/KosmetikTemplate.astro';
 
 const config = {
@@ -8,29 +10,47 @@ const config = {
   slug: 'kosmetik',
   branche: 'kosmetik',
   marke: {
-    name: 'Studio Lumière',
+    name: 'Aura Beauty Studio',
     slogan: 'Schönheit, die von innen leuchtet.',
     logo: null,
     farben: { primary: '#9d4edd', secondary: '#7b2d8b', accent: '#c77dff' },
   },
   kontakt: {
     adresse: 'Königstraße 28, 70173 Stuttgart',
+    stadt: 'Stuttgart',
     telefon: '0711 / 987 654',
-    email: 'hello@studio-lumiere.de',
-    instagram: '@studiolumiere',
+    email: 'hello@aura-beauty.de',
+    oeffnung: 'Di–Fr 10:00–19:00 · Sa 9:00–14:00',
+    instagram: '@aurabeautystudio',
+  },
+  hero: {
+    ueberschrift: 'Schönheit, die zu Ihnen passt.',
+    text: 'Boutique-Beauty in Stuttgart mit Zeit für ein ehrliches Erstgespräch. Wir behandeln nie beim ersten Besuch — Sie kommen, wir analysieren, Sie entscheiden in Ruhe.',
+    cta_text: 'Erstgespräch buchen',
+    cta_ziel: '#kontakt',
   },
   leistungen: [
-    { icon: '💆', titel: 'Gesichtsbehandlung', preis: 'ab 79 €', dauer: '60 Min.', hot: false },
-    { icon: '✨', titel: 'Microneedling', preis: 'ab 149 €', dauer: '75 Min.', hot: true },
-    { icon: '💉', titel: 'Hyaluron-Filler', preis: 'ab 199 €', dauer: '45 Min.', hot: true },
-    { icon: '🌿', titel: 'Peeling & Reinigung', preis: 'ab 59 €', dauer: '50 Min.', hot: false },
-    { icon: '👁️', titel: 'Wimpernverlängerung', preis: 'ab 89 €', dauer: '90 Min.', hot: false },
-    { icon: '🌸', titel: 'Braut-Package', preis: 'ab 299 €', dauer: '3 Std.', hot: false },
+    { titel: 'Gesichtsbehandlung', text: 'Reinigung, Peeling, Maske, Massage — die Wohlfühl-Basis und gleichzeitig Pflege-Diagnostik.', preis: 'ab 79 €', dauer: '60 Min.', hot: false },
+    { titel: 'Microneedling', text: 'Bei unebener Hautstruktur, Akne-Narben, müder Haut. Spürbares Ergebnis nach 2–3 Sitzungen.', preis: 'ab 149 €', dauer: '75 Min.', hot: true },
+    { titel: 'Hyaluron-Filler', text: 'Sanfte Konturen und Volumen — natürlich, nicht maskenhaft. Immer mit Erstgespräch und Kontrolltermin.', preis: 'ab 199 €', dauer: '45 Min.', hot: true },
+    { titel: 'Intensiv-Peeling', text: 'Bei Pigmentflecken, ungleichmäßigem Teint, Anti-Aging. 3–4 Sitzungen für sichtbares Ergebnis.', preis: 'ab 89 €', dauer: '50 Min.', hot: false },
+    { titel: 'Wimpernverlängerung', text: 'Natürlicher Look oder volumig — wir empfehlen ehrlich, was zu Ihrem Augenform und Alltag passt.', preis: 'ab 89 €', dauer: '90 Min.', hot: false },
+    { titel: 'Braut-Package', text: 'Probetermin 6 Wochen vorher, Hauptbehandlung am Hochzeitstag — inklusive Notfall-Plan, falls die Haut zickt.', preis: 'ab 299 €', dauer: '3 Std.', hot: false },
+  ],
+  team: [
+    { name: 'Léa Bertrand', rolle: 'Inhaberin · Anti-Aging-Spezialistin', bild: null, initialen: 'LB',
+      bio: 'Hat das Studio 2019 eröffnet, weil sie keine Lust mehr auf „Pakete drücken" hatte. Spezialisiert auf Hyaluron mit natürlichem Ergebnis — Sie sehen aus wie Sie, ausgeschlafen.' },
+    { name: 'Sarah Wagner', rolle: 'Kosmetikerin · Microneedling & Peelings', bild: null, initialen: 'SW',
+      bio: 'Trifft den Skin-Reset wie kaum eine Zweite. Wenn Sie schon alles probiert haben und gar nicht mehr glauben wollen — fragen Sie nach Sarah.' },
+    { name: 'Mira Özdemir', rolle: 'Kosmetikerin · Wimpern & Brautstyling', bild: null, initialen: 'MÖ',
+      bio: 'Wimpern-Spezialistin in vier Volumen-Stufen. Plant Braut-Termine wie eine Choreografin — Probetermin 6 Wochen vorher, Notfall-Plan inklusive.' },
+    { name: 'Anna Schultz', rolle: 'Beraterin · Hautanalyse & Pflege', bild: null, initialen: 'AS',
+      bio: 'Macht das Erstgespräch. Sagt ehrlich, wenn eine Pflege-Routine zu Hause völlig ausreicht — auch wenn das heisst, Sie buchen heute nicht.' },
   ],
   bewertungen: [
-    { name: 'Julia S.', sterne: 5, text: 'Ich war wegen meiner Haut sehr unsicher — nach 3 Behandlungen sehe ich mich kaum wieder. Das Team ist unglaublich einfühlsam.' },
-    { name: 'Mia L.', sterne: 5, text: 'Die Atmosphäre im Studio ist traumhaft. Man fühlt sich sofort wohl. Die Hyaluron-Behandlung hat fantastische Ergebnisse geliefert.' },
-    { name: 'Sophie K.', sterne: 5, text: 'Endlich ein Studio das sich wirklich Zeit nimmt. Keine Hetze, keine Massenabfertigung — pure Verwöhnung.' },
+    { name: 'Julia S., Stuttgart', sterne: 5, text: 'Ich war wegen meiner Haut sehr unsicher — nach 3 Behandlungen sehe ich mich kaum wieder. Léa hat sich von Anfang an Zeit genommen und mir nichts aufgeschwatzt, was ich nicht brauchte.' },
+    { name: 'Mia L., Esslingen', sterne: 5, text: 'Die Atmosphäre ist traumhaft. Beim Hyaluron-Termin hat man mir vorher erklärt was geht und was nicht — natürliches Ergebnis, keiner hat „gemacht" erkannt. Genau das wollte ich.' },
+    { name: 'Sophie K., Stuttgart', sterne: 5, text: 'Endlich ein Studio das sich wirklich Zeit nimmt. Keine Hetze, keine Pakete-Verkäufe — pure Beratung und ein Plan, der zu mir passt. Bin jetzt Stammkundin.' },
   ],
   meta: { quelle: 'manuell', leadbook_lead_id: null, domain_ist: null, erstellt_am: null, notiz: 'Showcase-Demo' },
 };

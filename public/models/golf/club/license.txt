@@ -1,0 +1,8 @@
+Model Information:
+* title:	Golf club exported from L4D2
+* source:	https://sketchfab.com/3d-models/golf-club-exported-from-l4d2-976ec0b3dd1145fca0975b3a9e4acc30
+* author:	Daneelek (https://sketchfab.com/Daneelek)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
